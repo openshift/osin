@@ -11,6 +11,10 @@ Using it, you can build your own OAuth2 authentication service.
 
 The library implements the majority of the specification, like authorization and token endpoints, and authorization code, implicit, resource owner and client credentials grant types.
 
+### Dependencies
+
+* go-uuid (http://code.google.com/p/go-uuid)
+
 ### Example Server
 
 	import "github.com/RangelReale/osin"
