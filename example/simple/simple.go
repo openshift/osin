@@ -1,11 +1,11 @@
 package main
 
 import (
+	example ".."
+	osin "../.."
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/RangelReale/osin"
-	"github.com/RangelReale/osin/example"
 	"net/http"
 	"net/url"
 )
