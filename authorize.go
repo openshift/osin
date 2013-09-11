@@ -40,19 +40,13 @@ func (d *AuthorizeData) IsExpired() bool {
 	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second).Before(time.Now())
 }
 
+func (d *AuthorizeData) ExpireAt() time.Time {
+	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second)
+}
+
 // Authorization token generator interface
 type AuthorizeTokenGen interface {
 	GenerateAuthorizeToken(data *AuthorizeData) (string, error)
-}
-
-// Default authorization token generator
-type AuthorizeTokenGenDefault struct {
-	TokenGen TokenGen
-}
-
-func (a *AuthorizeTokenGenDefault) GenerateAuthorizeToken(data *AuthorizeData) (ret string, err error) {
-	ret, err = a.TokenGen.GenerateToken()
-	return
 }
 
 // Authorize request

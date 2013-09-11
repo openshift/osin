@@ -5,26 +5,26 @@ import (
 	"encoding/base64"
 )
 
-// Token generator interface
-type TokenGen interface {
-	AddHeader(name string, value interface{})
-	AddValue(name string, value interface{})
-	GenerateToken() (string, error)
+// Default authorization token generator
+type AuthorizeTokenGenDefault struct {
 }
 
-// Default random token generator
-type DefaultTokenGen struct {
-}
-
-func (t *DefaultTokenGen) AddHeader(name string, value interface{}) {
-
-}
-
-func (t *DefaultTokenGen) AddValue(name string, value interface{}) {
-
-}
-
-func (t *DefaultTokenGen) GenerateToken() (string, error) {
+func (a *AuthorizeTokenGenDefault) GenerateAuthorizeToken(data *AuthorizeData) (ret string, err error) {
 	token := uuid.New()
 	return base64.StdEncoding.EncodeToString([]byte(token)), nil
+}
+
+// Default authorization token generator
+type AccessTokenGenDefault struct {
+}
+
+func (a *AccessTokenGenDefault) GenerateAccessToken(data *AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error) {
+	accesstoken = uuid.New()
+	accesstoken = base64.StdEncoding.EncodeToString([]byte(accesstoken))
+
+	if generaterefresh {
+		refreshtoken = uuid.New()
+		refreshtoken = base64.StdEncoding.EncodeToString([]byte(refreshtoken))
+	}
+	return
 }

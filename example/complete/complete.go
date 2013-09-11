@@ -385,7 +385,7 @@ func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.R
 
 	w.Write([]byte("<html><body>"))
 
-	w.Write([]byte(fmt.Sprintf("LOGIN %s<br/>", ar.Client.Id)))
+	w.Write([]byte(fmt.Sprintf("LOGIN %s (use test/test)<br/>", ar.Client.Id)))
 	w.Write([]byte(fmt.Sprintf("<form action=\"/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s\" method=\"POST\">",
 		ar.Type, ar.Client.Id, ar.State, url.QueryEscape(ar.RedirectUri))))
 

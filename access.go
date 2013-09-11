@@ -56,25 +56,13 @@ func (d *AccessData) IsExpired() bool {
 	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second).Before(time.Now())
 }
 
+func (d *AccessData) ExpireAt() time.Time {
+	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second)
+}
+
 // Access token generator interface
 type AccessTokenGen interface {
 	GenerateAccessToken(data *AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error)
-}
-
-// Default authorization token generator
-type AccessTokenGenDefault struct {
-	TokenGen TokenGen
-}
-
-func (a *AccessTokenGenDefault) GenerateAccessToken(data *AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error) {
-	accesstoken, err = a.TokenGen.GenerateToken()
-	if err != nil {
-		return "", "", err
-	}
-	if generaterefresh {
-		refreshtoken, err = a.TokenGen.GenerateToken()
-	}
-	return
 }
 
 // Access token request
