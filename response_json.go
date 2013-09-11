@@ -14,21 +14,23 @@ func NewResponseOutputJSON() *ResponseOutputJSON {
 }
 
 func (o *ResponseOutputJSON) Output(rs *Response, w http.ResponseWriter, r *http.Request) error {
+	// Add headers
 	for i, k := range rs.Headers {
 		for _, v := range k {
 			w.Header().Add(i, v)
 		}
 	}
+
 	if rs.Type == REDIRECT {
+		// Output redirect with parameters
 		u, err := rs.GetRedirectUrl()
 		if err != nil {
 			return err
 		}
-		//w.WriteHeader(rs.StatusCode)
-		//w.Write([]byte(fmt.Sprintf("REDIRECT: %s", u)))
 		w.Header().Add("Location", u)
 		w.WriteHeader(302)
 	} else {
+		// Ouptut json
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(rs.StatusCode)
 		data, err := json.Marshal(rs.Output)

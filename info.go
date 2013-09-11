@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// Information request.
+// NOT an RFC specification.
 func (s *Server) HandleInfoRequest(w *Response, r *http.Request) bool {
 	r.ParseForm()
 

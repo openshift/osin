@@ -2,8 +2,8 @@ package osin
 
 // Helper allowing objects
 type AllowedAuthorizeType []AuthorizeRequestType
-type AllowedAccessType []AccessRequestType
 
+// Checks if the type exists in the list
 func (t AllowedAuthorizeType) Exists(rt AuthorizeRequestType) bool {
 	for _, k := range t {
 		if k == rt {
@@ -13,6 +13,9 @@ func (t AllowedAuthorizeType) Exists(rt AuthorizeRequestType) bool {
 	return false
 }
 
+type AllowedAccessType []AccessRequestType
+
+// Checks if the type exists in the list
 func (t AllowedAccessType) Exists(rt AccessRequestType) bool {
 	for _, k := range t {
 		if k == rt {
@@ -24,16 +27,25 @@ func (t AllowedAccessType) Exists(rt AccessRequestType) bool {
 
 // Server configuration
 type ServerConfig struct {
+	// Authorization token expiration in seconds (default 5 minutes)
 	AuthorizationExpiration int32
-	AccessExpiration        int32
-	TokenType               string
-	AllowedAuthorizeTypes   AllowedAuthorizeType
-	AllowedAccessTypes      AllowedAccessType
+
+	// Access token expiration in seconds (default 1 hour)
+	AccessExpiration int32
+
+	// Token type to return
+	TokenType string
+
+	// List of allowed authorize types (only CODE by default)
+	AllowedAuthorizeTypes AllowedAuthorizeType
+
+	// List of allowed access types (only AUTHORIZATION_CODE by default)
+	AllowedAccessTypes AllowedAccessType
 }
 
 func NewServerConfig() *ServerConfig {
 	return &ServerConfig{
-		AuthorizationExpiration: 3600,
+		AuthorizationExpiration: 250,
 		AccessExpiration:        3600,
 		TokenType:               "bearer",
 		AllowedAuthorizeTypes:   AllowedAuthorizeType{CODE},

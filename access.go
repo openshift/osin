@@ -28,9 +28,17 @@ type AccessRequest struct {
 	Username      string
 	Password      string
 
-	Authorized      bool
+	// Set if request is authorized
+	Authorized bool
+
+	// Token expiration in seconds. Change if different from default
+	Expiration int32
+
+	// Set if a refresh token should be generated
 	GenerateRefresh bool
-	UserData        interface{}
+
+	// Data to be passed to storage. Not used by the library.
+	UserData interface{}
 }
 
 // Access data
@@ -42,20 +50,36 @@ type AccessData struct {
 	AuthorizeData *AuthorizeData
 
 	// Previous access data, for refresh token
-	AccessData   *AccessData
-	AccessToken  string
+	AccessData *AccessData
+
+	// Access token
+	AccessToken string
+
+	// Refresh Token. Can be blank
 	RefreshToken string
-	ExpiresIn    int32
-	Scope        string
-	RedirectUri  string
-	CreatedAt    time.Time
-	UserData     interface{}
+
+	// Token expiration in seconds
+	ExpiresIn int32
+
+	// Requested scope
+	Scope string
+
+	// Redirect Uri from request
+	RedirectUri string
+
+	// Date created
+	CreatedAt time.Time
+
+	// Data to be passed to storage. Not used by the library.
+	UserData interface{}
 }
 
+// Returns true if access expired
 func (d *AccessData) IsExpired() bool {
 	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second).Before(time.Now())
 }
 
+// Returns the expiration date
 func (d *AccessData) ExpireAt() time.Time {
 	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second)
 }
@@ -94,6 +118,7 @@ func (s *Server) handleAccessRequestAuthorizationCode(w *Response, r *http.Reque
 		Code:            r.Form.Get("code"),
 		RedirectUri:     r.Form.Get("redirect_uri"),
 		GenerateRefresh: true,
+		Expiration:      s.Config.AccessExpiration,
 	}
 
 	// "code" is required
@@ -186,6 +211,7 @@ func (s *Server) handleAccessRequestRefreshToken(w *Response, r *http.Request) *
 		Code:            r.Form.Get("refresh_token"),
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
+		Expiration:      s.Config.AccessExpiration,
 	}
 
 	// "refresh_token" is required
@@ -268,6 +294,7 @@ func (s *Server) handleAccessRequestPassword(w *Response, r *http.Request) *Acce
 		Password:        r.Form.Get("password"),
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
+		Expiration:      s.Config.AccessExpiration,
 	}
 
 	// "username" and "password" is required
@@ -323,6 +350,7 @@ func (s *Server) handleAccessRequestClientCredentials(w *Response, r *http.Reque
 		Type:            CLIENT_CREDENTIALS,
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
+		Expiration:      s.Config.AccessExpiration,
 	}
 
 	// must have a valid client
@@ -362,7 +390,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 			AccessData:    ar.AccessData,
 			RedirectUri:   r.Form.Get("redirect_uri"),
 			CreatedAt:     time.Now(),
-			ExpiresIn:     s.Config.AccessExpiration,
+			ExpiresIn:     ar.Expiration,
 			UserData:      ar.UserData,
 		}
 

@@ -1,5 +1,8 @@
 package main
 
+// Open url in browser:
+// http://localhost:14000/app
+
 import (
 	example ".."
 	osin "../.."

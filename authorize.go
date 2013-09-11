@@ -20,26 +20,50 @@ type AuthorizeRequest struct {
 	RedirectUri string
 	State       string
 
+	// Set if request is authorized
 	Authorized bool
-	UserData   interface{}
+
+	// Token expiration in seconds. Change if different from default.
+	// If type = TOKEN, this expiration will be for the ACCESS token.
+	Expiration int32
+
+	// Data to be passed to storage. Not used by the library.
+	UserData interface{}
 }
 
 // Authorization data
 type AuthorizeData struct {
-	Client      *Client
-	Code        string
-	ExpiresIn   int32
-	Scope       string
+	// Client information
+	Client *Client
+
+	// Authorization code
+	Code string
+
+	// Token expiration in seconds
+	ExpiresIn int32
+
+	// Requested scope
+	Scope string
+
+	// Redirect Uri from request
 	RedirectUri string
-	State       string
-	CreatedAt   time.Time
-	UserData    interface{}
+
+	// State data from request
+	State string
+
+	// Date created
+	CreatedAt time.Time
+
+	// Data to be passed to storage. Not used by the library.
+	UserData interface{}
 }
 
+// Returns true if authorization expired
 func (d *AuthorizeData) IsExpired() bool {
 	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second).Before(time.Now())
 }
 
+// Returns the expiration date
 func (d *AuthorizeData) ExpireAt() time.Time {
 	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second)
 }
@@ -75,6 +99,7 @@ func (s *Server) handleAuthorizeRequestCode(w *Response, r *http.Request) *Autho
 		Scope:       r.Form.Get("scope"),
 		RedirectUri: r.Form.Get("redirect_uri"),
 		Authorized:  false,
+		Expiration:  s.Config.AuthorizationExpiration,
 	}
 
 	var err error
@@ -119,6 +144,8 @@ func (s *Server) handleAuthorizeRequestToken(w *Response, r *http.Request) *Auth
 		Scope:       r.Form.Get("scope"),
 		RedirectUri: r.Form.Get("redirect_uri"),
 		Authorized:  false,
+		// this type will generate a token directly, use access token expiration instead.
+		Expiration: s.Config.AccessExpiration,
 	}
 
 	var err error
@@ -170,8 +197,9 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 				Client:          ar.Client,
 				RedirectUri:     ar.RedirectUri,
 				Scope:           ar.Scope,
-				GenerateRefresh: false,
+				GenerateRefresh: false, // per the RFC, should NOT generate a refresh token in this case
 				Authorized:      true,
+				Expiration:      ar.Expiration,
 				UserData:        ar.UserData,
 			}
 
@@ -181,7 +209,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			ret := &AuthorizeData{
 				Client:      ar.Client,
 				CreatedAt:   time.Now(),
-				ExpiresIn:   s.Config.AuthorizationExpiration,
+				ExpiresIn:   ar.Expiration,
 				RedirectUri: ar.RedirectUri,
 				State:       ar.State,
 				Scope:       ar.Scope,

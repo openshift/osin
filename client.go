@@ -2,8 +2,15 @@ package osin
 
 // Client information
 type Client struct {
-	Id          string
-	Secret      string
+	// Client id
+	Id string
+
+	// Client secrent
+	Secret string
+
+	// Base client uri
 	RedirectUri string
-	UserData    interface{}
+
+	// Data to be passed to storage. Not used by the library.
+	UserData interface{}
 }
