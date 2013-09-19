@@ -112,6 +112,19 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 }
 
 func (s *Server) handleAccessRequestAuthorizationCode(w *Response, r *http.Request) *AccessRequest {
+	// get client information from basic authentication
+	auth, err := CheckBasicAuth(r)
+	if err != nil {
+		w.SetError(E_INVALID_REQUEST, "")
+		w.InternalError = err
+		return nil
+	}
+	if auth == nil {
+		w.SetError(E_INVALID_REQUEST, "")
+		w.InternalError = errors.New("Client authentication not sent")
+		return nil
+	}
+
 	// generate access token
 	ret := &AccessRequest{
 		Type:            AUTHORIZATION_CODE,
@@ -127,16 +140,18 @@ func (s *Server) handleAccessRequestAuthorizationCode(w *Response, r *http.Reque
 		return nil
 	}
 
-	var err error
-
 	// must have a valid client
-	ret.Client, err = s.Storage.GetClient(r.Form.Get("client_id"))
+	ret.Client, err = s.Storage.GetClient(auth.Username)
 	if err != nil {
 		w.SetError(E_SERVER_ERROR, "")
 		w.InternalError = err
 		return nil
 	}
 	if ret.Client == nil {
+		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		return nil
+	}
+	if ret.Client.Secret != auth.Password {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
