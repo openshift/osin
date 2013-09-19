@@ -54,7 +54,7 @@ func main() {
 
 	// Authorization code endpoint
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
-		resp := osin.NewResponse()
+		resp := server.NewResponse()
 		if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
 			if !HandleLoginPage(ar, w, r) {
 				return
@@ -70,7 +70,7 @@ func main() {
 
 	// Access token endpoint
 	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
-		resp := osin.NewResponse()
+		resp := server.NewResponse()
 		if ar := server.HandleAccessRequest(resp, r); ar != nil {
 			ar.Authorized = true
 			server.FinishAccessRequest(resp, r, ar)
@@ -83,7 +83,7 @@ func main() {
 
 	// Information endpoint
 	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
-		resp := osin.NewResponse()
+		resp := server.NewResponse()
 		if ir := server.HandleInfoRequest(resp, r); ir != nil {
 			server.FinishInfoRequest(resp, r, ir)
 		}
@@ -115,7 +115,8 @@ func main() {
 
 			// if parse, download and parse json
 			if r.Form.Get("doparse") == "1" {
-				err := DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl), nil, jr)
+				err := DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
+					&osin.BasicAuth{"1234", "aabbccdd"}, jr)
 				if err != nil {
 					w.Write([]byte(err.Error()))
 					w.Write([]byte("<br/>"))

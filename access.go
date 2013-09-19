@@ -113,7 +113,7 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 
 func (s *Server) handleAccessRequestAuthorizationCode(w *Response, r *http.Request) *AccessRequest {
 	// get client information from basic authentication
-	auth, err := CheckBasicAuth(r)
+	auth, err := CheckClientAuth(r, s.Config.AllowClientSecretInParams)
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
@@ -208,7 +208,7 @@ func (s *Server) handleAccessRequestAuthorizationCode(w *Response, r *http.Reque
 
 func (s *Server) handleAccessRequestRefreshToken(w *Response, r *http.Request) *AccessRequest {
 	// get client information from basic authentication
-	auth, err := CheckBasicAuth(r)
+	auth, err := CheckClientAuth(r, s.Config.AllowClientSecretInParams)
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
@@ -290,7 +290,7 @@ func (s *Server) handleAccessRequestRefreshToken(w *Response, r *http.Request) *
 
 func (s *Server) handleAccessRequestPassword(w *Response, r *http.Request) *AccessRequest {
 	// get client information from basic authentication
-	auth, err := CheckBasicAuth(r)
+	auth, err := CheckClientAuth(r, s.Config.AllowClientSecretInParams)
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
@@ -348,7 +348,7 @@ func (s *Server) handleAccessRequestPassword(w *Response, r *http.Request) *Acce
 
 func (s *Server) handleAccessRequestClientCredentials(w *Response, r *http.Request) *AccessRequest {
 	// get client information from basic authentication
-	auth, err := CheckBasicAuth(r)
+	auth, err := CheckClientAuth(r, s.Config.AllowClientSecretInParams)
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err

@@ -10,6 +10,7 @@ type Server struct {
 	AccessTokenGen    AccessTokenGen
 }
 
+// Creates a new server instance
 func NewServer(config *ServerConfig, storage Storage) *Server {
 	return &Server{
 		Config:            config,
@@ -17,4 +18,11 @@ func NewServer(config *ServerConfig, storage Storage) *Server {
 		AuthorizeTokenGen: &AuthorizeTokenGenDefault{},
 		AccessTokenGen:    &AccessTokenGenDefault{},
 	}
+}
+
+// Creates a new response for the server
+func (s *Server) NewResponse() *Response {
+	r := NewDefaultResponse()
+	r.ErrorStatusCode = s.Config.ErrorStatusCode
+	return r
 }

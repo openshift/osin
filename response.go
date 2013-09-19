@@ -38,7 +38,9 @@ type Response struct {
 }
 
 // Creates a new response
-func NewResponse() *Response {
+// NOTE: creating the response this way don't take in account server's
+// ErrorStatusCode configuration - use Server.NewResponse() instead
+func NewDefaultResponse() *Response {
 	r := &Response{
 		Type:            DATA,
 		StatusCode:      200,
@@ -71,6 +73,11 @@ func (r *Response) SetErrorUri(id string, description string, uri string, state 
 	// set error parameters
 	r.IsError = true
 	r.StatusCode = r.ErrorStatusCode
+	if r.StatusCode != 200 {
+		r.StatusText = description
+	} else {
+		r.StatusText = ""
+	}
 	r.Output = make(ResponseData) // clear output
 	r.Output["error"] = id
 	r.Output["error_description"] = description

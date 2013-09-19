@@ -2,7 +2,9 @@ package osin
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 // Output the response in JSON
@@ -33,6 +35,10 @@ func (o *ResponseOutputJSON) Output(rs *Response, w http.ResponseWriter, r *http
 		// Ouptut json
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(rs.StatusCode)
+		if rs.IsError && rs.StatusText != "" {
+			// write status text
+			fmt.Fprintln(w, strings.Replace(rs.StatusText, "\n", " ", -1)) // remove any newlines
+		}
 		data, err := json.Marshal(rs.Output)
 		if err != nil {
 			return err

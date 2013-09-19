@@ -13,6 +13,7 @@ type BasicAuth struct {
 	Password string
 }
 
+// Return authorization header data
 func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	if r.Header.Get("Authorization") == "" {
 		return nil, nil
@@ -33,4 +34,16 @@ func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	}
 
 	return &BasicAuth{Username: pair[0], Password: pair[1]}, nil
+}
+
+// Check client authentication in params if allowed, and on authorization header
+func CheckClientAuth(r *http.Request, useparams bool) (*BasicAuth, error) {
+	if useparams {
+		ret := &BasicAuth{Username: r.Form.Get("client_id"), Password: r.Form.Get("client_secret")}
+		if ret.Username != "" && ret.Password != "" {
+			return ret, nil
+		}
+	}
+
+	return CheckBasicAuth(r)
 }
