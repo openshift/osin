@@ -84,7 +84,8 @@ func main() {
 	// Information endpoint
 	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
 		resp := osin.NewResponse()
-		if ok := server.HandleInfoRequest(resp, r); ok {
+		if ir := server.HandleInfoRequest(resp, r); ir != nil {
+			server.FinishInfoRequest(resp, r, ir)
 		}
 		output.Output(resp, w, r)
 	})

@@ -183,6 +183,11 @@ func (s *Server) handleAuthorizeRequestToken(w *Response, r *http.Request) *Auth
 }
 
 func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *AuthorizeRequest) {
+	// don't process if is already an error
+	if w.IsError {
+		return
+	}
+
 	// force redirect response
 	w.SetRedirect(ar.RedirectUri)
 

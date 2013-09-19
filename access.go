@@ -397,6 +397,11 @@ func (s *Server) handleAccessRequestClientCredentials(w *Response, r *http.Reque
 }
 
 func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessRequest) {
+	// don't process if is already an error
+	if w.IsError {
+		return
+	}
+
 	if ar.Authorized {
 		// generate access token
 		ret := &AccessData{
