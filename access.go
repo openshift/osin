@@ -91,6 +91,17 @@ type AccessTokenGen interface {
 
 // Access token request
 func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessRequest {
+	// Only allow GET or POST
+	if r.Method == "GET" {
+		if !s.Config.AllowGetAccessRequest {
+			w.SetError(E_INVALID_REQUEST, "")
+			return nil
+		}
+	} else if r.Method != "POST" {
+		w.SetError(E_INVALID_REQUEST, "")
+		return nil
+	}
+
 	r.ParseForm()
 
 	grantType := AccessRequestType(r.Form.Get("grant_type"))

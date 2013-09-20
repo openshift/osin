@@ -49,6 +49,9 @@ type ServerConfig struct {
 	// If true allows client secret also in params, else only in
 	// Authorization header - default false
 	AllowClientSecretInParams bool
+
+	// If true allows access request using GET, else only POST - default false
+	AllowGetAccessRequest bool
 }
 
 func NewServerConfig() *ServerConfig {
@@ -60,5 +63,6 @@ func NewServerConfig() *ServerConfig {
 		AllowedAccessTypes:        AllowedAccessType{AUTHORIZATION_CODE},
 		ErrorStatusCode:           200,
 		AllowClientSecretInParams: false,
+		AllowGetAccessRequest:     false,
 	}
 }
