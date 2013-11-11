@@ -1,8 +1,9 @@
 package osin
 
 import (
-	"code.google.com/p/go-uuid/uuid"
 	"encoding/base64"
+
+	"code.google.com/p/go-uuid/uuid"
 )
 
 // Default authorization token generator
