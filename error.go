@@ -24,6 +24,11 @@ type DefaultErrors struct {
 	errormap map[string]string
 }
 
+// NewDefaultErrors initializes OAuth2 error codes and descriptions.
+// http://tools.ietf.org/html/rfc6749#section-4.1.2.1
+// http://tools.ietf.org/html/rfc6749#section-4.2.2.1
+// http://tools.ietf.org/html/rfc6749#section-5.2
+// http://tools.ietf.org/html/rfc6749#section-7.2
 func NewDefaultErrors() *DefaultErrors {
 	r := &DefaultErrors{errormap: make(map[string]string)}
 	r.errormap[E_INVALID_REQUEST] = "The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed."

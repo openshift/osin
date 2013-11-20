@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// AuthorizeRequestType is the type for OAuth param `response_type`
 type AuthorizeRequestType string
 
 const (
@@ -58,22 +59,23 @@ type AuthorizeData struct {
 	UserData interface{}
 }
 
-// Returns true if authorization expired
+// IsExpired is true if authorization expired
 func (d *AuthorizeData) IsExpired() bool {
 	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second).Before(time.Now())
 }
 
-// Returns the expiration date
+// ExpireAt returns the expiration date
 func (d *AuthorizeData) ExpireAt() time.Time {
 	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second)
 }
 
-// Authorization token generator interface
+// AuthorizeTokenGen is the token generator interface
 type AuthorizeTokenGen interface {
 	GenerateAuthorizeToken(data *AuthorizeData) (string, error)
 }
 
-// Authorize request
+// HandleAuthorizeRequest is the main http.HandlerFunc for handling
+// authorization requests
 func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *AuthorizeRequest {
 	r.ParseForm()
 
@@ -81,9 +83,9 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	if s.Config.AllowedAuthorizeTypes.Exists(requestType) {
 		switch requestType {
 		case CODE:
-			return s.handleAuthorizeRequestCode(w, r)
+			return s.handleCodeRequest(w, r)
 		case TOKEN:
-			return s.handleAuthorizeRequestToken(w, r)
+			return s.handleTokenRequest(w, r)
 		}
 	}
 
@@ -91,7 +93,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	return nil
 }
 
-func (s *Server) handleAuthorizeRequestCode(w *Response, r *http.Request) *AuthorizeRequest {
+func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeRequest {
 	// create the authorization request
 	ret := &AuthorizeRequest{
 		Type:        CODE,
@@ -136,7 +138,7 @@ func (s *Server) handleAuthorizeRequestCode(w *Response, r *http.Request) *Autho
 	return ret
 }
 
-func (s *Server) handleAuthorizeRequestToken(w *Response, r *http.Request) *AuthorizeRequest {
+func (s *Server) handleTokenRequest(w *Response, r *http.Request) *AuthorizeRequest {
 	// create the authorization request
 	ret := &AuthorizeRequest{
 		Type:        TOKEN,

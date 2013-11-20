@@ -1,9 +1,9 @@
 package osin
 
-// Helper allowing objects
+// AllowedAuthorizeType is a collection of allowed auth request types
 type AllowedAuthorizeType []AuthorizeRequestType
 
-// Checks if the type exists in the list
+// Exists returns true if the auth type exists in the list
 func (t AllowedAuthorizeType) Exists(rt AuthorizeRequestType) bool {
 	for _, k := range t {
 		if k == rt {
@@ -13,9 +13,10 @@ func (t AllowedAuthorizeType) Exists(rt AuthorizeRequestType) bool {
 	return false
 }
 
+// AllowedAccessType is a collection of allowed access request types
 type AllowedAccessType []AccessRequestType
 
-// Checks if the type exists in the list
+// Exists returns true if the access type exists in the list
 func (t AllowedAccessType) Exists(rt AccessRequestType) bool {
 	for _, k := range t {
 		if k == rt {
@@ -25,7 +26,7 @@ func (t AllowedAccessType) Exists(rt AccessRequestType) bool {
 	return false
 }
 
-// Server configuration
+// ServerConfig contains server configuration information
 type ServerConfig struct {
 	// Authorization token expiration in seconds (default 5 minutes)
 	AuthorizationExpiration int32
@@ -54,6 +55,7 @@ type ServerConfig struct {
 	AllowGetAccessRequest bool
 }
 
+// NewServerConfig returns a new ServerConfig with default configuration
 func NewServerConfig() *ServerConfig {
 	return &ServerConfig{
 		AuthorizationExpiration:   250,

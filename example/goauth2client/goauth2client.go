@@ -5,12 +5,11 @@ package main
 // http://localhost:14000/app
 
 import (
-	example ".."
-	osin "../.."
 	"code.google.com/p/goauth2/oauth"
 	"fmt"
+	"github.com/RangelReale/osin"
+	"github.com/RangelReale/osin/example"
 	"net/http"
-	"net/url"
 )
 
 func main() {
@@ -21,7 +20,6 @@ func main() {
 	config.AllowClientSecretInParams = true
 
 	server := osin.NewServer(config, example.NewTestStorage())
-	output := osin.NewResponseOutputJSON()
 
 	client := &oauth.Config{
 		ClientId:     "1234",
@@ -36,7 +34,7 @@ func main() {
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
 		resp := server.NewResponse()
 		if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
-			if !HandleLoginPage(ar, w, r) {
+			if !example.HandleLoginPage(ar, w, r) {
 				return
 			}
 			ar.Authorized = true
@@ -45,7 +43,7 @@ func main() {
 		if resp.IsError && resp.InternalError != nil {
 			fmt.Printf("ERROR: %s\n", resp.InternalError)
 		}
-		output.Output(resp, w, r)
+		osin.OutputJSON(resp, w, r)
 	})
 
 	// Access token endpoint
@@ -58,7 +56,7 @@ func main() {
 		if resp.IsError && resp.InternalError != nil {
 			fmt.Printf("ERROR: %s\n", resp.InternalError)
 		}
-		output.Output(resp, w, r)
+		osin.OutputJSON(resp, w, r)
 	})
 
 	// Information endpoint
@@ -67,7 +65,7 @@ func main() {
 		if ir := server.HandleInfoRequest(resp, r); ir != nil {
 			server.FinishInfoRequest(resp, r, ir)
 		}
-		output.Output(resp, w, r)
+		osin.OutputJSON(resp, w, r)
 	})
 
 	// Application home endpoint
@@ -124,28 +122,4 @@ func main() {
 	})
 
 	http.ListenAndServe(":14000", nil)
-}
-
-// Login page
-func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.Request) bool {
-	r.ParseForm()
-	if r.Method == "POST" && r.Form.Get("login") == "test" && r.Form.Get("password") == "test" {
-		return true
-	}
-
-	w.Write([]byte("<html><body>"))
-
-	w.Write([]byte(fmt.Sprintf("LOGIN %s (use test/test)<br/>", ar.Client.Id)))
-	w.Write([]byte(fmt.Sprintf("<form action=\"/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s\" method=\"POST\">",
-		ar.Type, ar.Client.Id, ar.State, url.QueryEscape(ar.RedirectUri))))
-
-	w.Write([]byte("Login: <input type=\"text\" name=\"login\" /><br/>"))
-	w.Write([]byte("Password: <input type=\"password\" name=\"password\" /><br/>"))
-	w.Write([]byte("<input type=\"submit\"/>"))
-
-	w.Write([]byte("</form>"))
-
-	w.Write([]byte("</body></html>"))
-
-	return false
 }

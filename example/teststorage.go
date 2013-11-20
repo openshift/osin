@@ -1,9 +1,9 @@
 package example
 
 import (
-	osin ".."
 	"errors"
 	"fmt"
+	"github.com/RangelReale/osin"
 )
 
 type TestStorage struct {

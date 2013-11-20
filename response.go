@@ -18,11 +18,6 @@ const (
 	REDIRECT
 )
 
-// Interface for response output
-type ResponseOutput interface {
-	Output(*Response, http.ResponseWriter, *http.Request) error
-}
-
 // Server response
 type Response struct {
 	Type               ResponseType
@@ -37,33 +32,19 @@ type Response struct {
 	RedirectInFragment bool
 }
 
-// Creates a new response
-// NOTE: creating the response this way don't take in account server's
-// ErrorStatusCode configuration - use Server.NewResponse() instead
-func NewDefaultResponse() *Response {
-	r := &Response{
-		Type:            DATA,
-		StatusCode:      200,
-		ErrorStatusCode: 200,
-		Output:          make(ResponseData),
-		Headers:         make(http.Header),
-		IsError:         false,
-	}
-	r.Headers.Add("Cache-Control", "no-store")
-	return r
-}
-
-// Set error
+// SetError sets an error id and description on the Response
+// state and uri are left blank
 func (r *Response) SetError(id string, description string) {
 	r.SetErrorUri(id, description, "", "")
 }
 
-// Set error with state
+// SetErrorState sets an error id, description, and state on the Response
+// uri is left blank
 func (r *Response) SetErrorState(id string, description string, state string) {
 	r.SetErrorUri(id, description, "", state)
 }
 
-// Set error with uri
+// SetErrorUri sets an error id, description, state, and uri on the Response
 func (r *Response) SetErrorUri(id string, description string, uri string, state string) {
 	// get default error message
 	if description == "" {
@@ -89,19 +70,19 @@ func (r *Response) SetErrorUri(id string, description string, uri string, state 
 	}
 }
 
-// Set response to be redirect instead of data output
+// SetErrorUri changes the response to redirect to the given url
 func (r *Response) SetRedirect(url string) {
 	// set redirect parameters
 	r.Type = REDIRECT
 	r.URL = url
 }
 
-// If true, redirect values are passed in fragment instead of as query parameters
+// SetRedirectFragment sets redirect values to be passed in fragment instead of as query parameters
 func (r *Response) SetRedirectFragment(f bool) {
 	r.RedirectInFragment = f
 }
 
-// Returns the redirect url with parameters
+// GetRedirectUrl returns the redirect url with all query string parameters
 func (r *Response) GetRedirectUrl() (string, error) {
 	if r.Type != REDIRECT {
 		return "", errors.New("Not a redirect response")

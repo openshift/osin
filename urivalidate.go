@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Validate if redirectUri is contained in baseUri
+// ValidateUri validates that redirectUri is contained in baseUri
 func ValidateUri(baseUri string, redirectUri string) error {
 	if baseUri == "" || redirectUri == "" {
 		return errors.New("urls cannot be blank.")

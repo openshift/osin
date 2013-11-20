@@ -4,36 +4,38 @@ import ()
 
 // Storage interface
 type Storage interface {
-	// Load client.
+
+	// GetClient loads the client by id (client_id)
 	GetClient(id string) (*Client, error)
 
-	// Save authorize data.
+	// SaveAuthorize saves authorize data.
 	SaveAuthorize(*AuthorizeData) error
 
-	// Load authorize data. Client information MUST be loaded together.
+	// LoadAuthorize looks up AuthorizeData by a code.
+	// Client information MUST be loaded together.
 	// Optionally can return error if expired.
 	LoadAuthorize(code string) (*AuthorizeData, error)
 
-	// Remove authorize data.
+	// RemoveAuthorize revokes or deletes the authorization code.
 	RemoveAuthorize(code string) error
 
-	// Save access data. If RefreshToken is not blank, must save in a way
-	// that can be loaded using LoadRefresh.
+	// SaveAccess writes AccessData.
+	// If RefreshToken is not blank, it must save in a way that can be loaded using LoadRefresh.
 	SaveAccess(*AccessData) error
 
-	// Load access data. Client information MUST be loaded together.
+	// LoadAccess retrieves access data by token. Client information MUST be loaded together.
 	// AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 	// Optionally can return error if expired.
-	LoadAccess(code string) (*AccessData, error)
+	LoadAccess(token string) (*AccessData, error)
 
-	// Remove access data.
-	RemoveAccess(code string) error
+	// RemoveAccess revokes or deletes an AccessData.
+	RemoveAccess(token string) error
 
-	// Load refresh access data. Client information MUST be loaded together.
+	// LoadRefresh retrieves refresh AccessData. Client information MUST be loaded together.
 	// AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 	// Optionally can return error if expired.
-	LoadRefresh(code string) (*AccessData, error)
+	LoadRefresh(token string) (*AccessData, error)
 
-	// Remove refresh data.
-	RemoveRefresh(code string) error
+	// RemoveRefresh revokes or deletes refresh AccessData.
+	RemoveRefresh(token string) error
 }

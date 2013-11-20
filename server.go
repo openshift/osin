@@ -1,8 +1,10 @@
 package osin
 
-import ()
+import (
+	"net/http"
+)
 
-// OAuth2 server class
+// Server is an OAuth2 implementation
 type Server struct {
 	Config            *ServerConfig
 	Storage           Storage
@@ -10,7 +12,7 @@ type Server struct {
 	AccessTokenGen    AccessTokenGen
 }
 
-// Creates a new server instance
+// NewServer creates a new server instance
 func NewServer(config *ServerConfig, storage Storage) *Server {
 	return &Server{
 		Config:            config,
@@ -20,9 +22,17 @@ func NewServer(config *ServerConfig, storage Storage) *Server {
 	}
 }
 
-// Creates a new response for the server
+// NewResponse creates a new response for the server
 func (s *Server) NewResponse() *Response {
-	r := NewDefaultResponse()
+	r := &Response{
+		Type:            DATA,
+		StatusCode:      200,
+		ErrorStatusCode: 200,
+		Output:          make(ResponseData),
+		Headers:         make(http.Header),
+		IsError:         false,
+	}
+	r.Headers.Add("Cache-Control", "no-store")
 	r.ErrorStatusCode = s.Config.ErrorStatusCode
 	return r
 }
