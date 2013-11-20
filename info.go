@@ -5,13 +5,13 @@ import (
 	"time"
 )
 
-// Info request information
+// InfoRequest is a request for information about some AccessData
 type InfoRequest struct {
-	Code       string
-	AccessData *AccessData
+	Code       string      // Code to look up
+	AccessData *AccessData // AccessData associated with Code
 }
 
-// Information request.
+// HandleInfoRequest is an http.HandlerFunc for server information
 // NOT an RFC specification.
 func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	r.ParseForm()
@@ -51,6 +51,7 @@ func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	return ret
 }
 
+// FinishInfoRequest finalizes the request handled by HandleInfoRequest
 func (s *Server) FinishInfoRequest(w *Response, r *http.Request, ir *InfoRequest) {
 	// don't process if is already an error
 	if w.IsError {

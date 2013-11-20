@@ -21,19 +21,18 @@ The library implements the majority of the specification, like authorization and
 
 	// TestStorage implements the "osin.Storage" interface
 	server := osin.NewServer(osin.NewServerConfig(), &TestStorage{})
-	output := osin.NewResponseOutputJSON()
-	
+
 	// Authorization code endpoint
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
 		resp := server.NewResponse()
 		if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
-			
+
 			// HANDLE LOGIN PAGE HERE
-			
+
 			ar.Authorized = true
 			server.FinishAuthorizeRequest(resp, r, ar)
 		}
-		output.Output(resp, w, r)
+		osin.OutputJSON(resp, w, r)
 	})
 
 	// Access token endpoint
@@ -43,11 +42,11 @@ The library implements the majority of the specification, like authorization and
 			ar.Authorized = true
 			server.FinishAccessRequest(resp, r, ar)
 		}
-		output.Output(resp, w, r)
+		osin.OutputJSON(resp, w, r)
 	})
 
 	http.ListenAndServe(":14000", nil)
-		
+
 ### Example Access
 
 Open in your web browser:

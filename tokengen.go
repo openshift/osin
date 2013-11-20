@@ -5,19 +5,21 @@ import (
 	"encoding/base64"
 )
 
-// Default authorization token generator
+// AuthorizeTokenGenDefault is the default authorization token generator
 type AuthorizeTokenGenDefault struct {
 }
 
+// GenerateAuthorizeToken generates a base64-encoded UUID code
 func (a *AuthorizeTokenGenDefault) GenerateAuthorizeToken(data *AuthorizeData) (ret string, err error) {
 	token := uuid.New()
 	return base64.StdEncoding.EncodeToString([]byte(token)), nil
 }
 
-// Default authorization token generator
+// AccessTokenGenDefault is the default authorization token generator
 type AccessTokenGenDefault struct {
 }
 
+// GenerateAccessToken generates base64-encoded UUID access and refresh tokens
 func (a *AccessTokenGenDefault) GenerateAccessToken(data *AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error) {
 	accesstoken = uuid.New()
 	accesstoken = base64.StdEncoding.EncodeToString([]byte(accesstoken))

@@ -5,7 +5,7 @@ type Client struct {
 	// Client id
 	Id string
 
-	// Client secrent
+	// Client secret
 	Secret string
 
 	// Base client uri

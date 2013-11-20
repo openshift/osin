@@ -4,11 +4,9 @@ package main
 // http://localhost:14000/app
 
 import (
-	example ".."
-	osin "../.."
-	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/RangelReale/osin"
+	"github.com/RangelReale/osin/example"
 	"net/http"
 	"net/url"
 )
@@ -19,13 +17,12 @@ func main() {
 	sconfig.AllowedAccessTypes = osin.AllowedAccessType{osin.AUTHORIZATION_CODE,
 		osin.REFRESH_TOKEN, osin.PASSWORD, osin.CLIENT_CREDENTIALS}
 	server := osin.NewServer(sconfig, example.NewTestStorage())
-	output := osin.NewResponseOutputJSON()
 
 	// Authorization code endpoint
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
 		resp := server.NewResponse()
 		if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
-			if !HandleLoginPage(ar, w, r) {
+			if !example.HandleLoginPage(ar, w, r) {
 				return
 			}
 			ar.UserData = struct{ Login string }{Login: "test"}
@@ -38,7 +35,7 @@ func main() {
 		if !resp.IsError {
 			resp.Output["custom_parameter"] = 187723
 		}
-		output.Output(resp, w, r)
+		osin.OutputJSON(resp, w, r)
 	})
 
 	// Access token endpoint
@@ -65,7 +62,7 @@ func main() {
 		if !resp.IsError {
 			resp.Output["custom_parameter"] = 19923
 		}
-		output.Output(resp, w, r)
+		osin.OutputJSON(resp, w, r)
 	})
 
 	// Information endpoint
@@ -74,7 +71,7 @@ func main() {
 		if ir := server.HandleInfoRequest(resp, r); ir != nil {
 			server.FinishInfoRequest(resp, r, ir)
 		}
-		output.Output(resp, w, r)
+		osin.OutputJSON(resp, w, r)
 	})
 
 	// Application home endpoint
@@ -107,7 +104,7 @@ func main() {
 
 			// if parse, download and parse json
 			if r.Form.Get("doparse") == "1" {
-				err := DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
+				err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 					&osin.BasicAuth{"1234", "aabbccdd"}, jr)
 				if err != nil {
 					w.Write([]byte(err.Error()))
@@ -179,7 +176,7 @@ func main() {
 			"test", "test")
 
 		// doownload token
-		err := DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
+		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 			&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 		if err != nil {
 			w.Write([]byte(err.Error()))
@@ -224,7 +221,7 @@ func main() {
 		aurl := fmt.Sprintf("/token?grant_type=client_credentials")
 
 		// doownload token
-		err := DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
+		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 			&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 		if err != nil {
 			w.Write([]byte(err.Error()))
@@ -272,7 +269,7 @@ func main() {
 			aurl := fmt.Sprintf("/token?grant_type=refresh_token&refresh_token=%s", url.QueryEscape(code))
 
 			// doownload token
-			err := DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
+			err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 				&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 			if err != nil {
 				w.Write([]byte(err.Error()))
@@ -323,7 +320,7 @@ func main() {
 			aurl := fmt.Sprintf("/info?code=%s", url.QueryEscape(code))
 
 			// doownload token
-			err := DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
+			err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 				&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 			if err != nil {
 				w.Write([]byte(err.Error()))
@@ -354,53 +351,4 @@ func main() {
 	})
 
 	http.ListenAndServe(":14000", nil)
-}
-
-func DownloadAccessToken(url string, auth *osin.BasicAuth, output map[string]interface{}) error {
-	// download access token
-	preq, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return err
-	}
-	if auth != nil {
-		preq.SetBasicAuth(auth.Username, auth.Password)
-	}
-
-	pclient := &http.Client{}
-	presp, err := pclient.Do(preq)
-	if err != nil {
-		return err
-	}
-
-	if presp.StatusCode != 200 {
-		return errors.New("Invalid status code")
-	}
-
-	jdec := json.NewDecoder(presp.Body)
-	err = jdec.Decode(&output)
-	return err
-}
-
-// Login page
-func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.Request) bool {
-	r.ParseForm()
-	if r.Method == "POST" && r.Form.Get("login") == "test" && r.Form.Get("password") == "test" {
-		return true
-	}
-
-	w.Write([]byte("<html><body>"))
-
-	w.Write([]byte(fmt.Sprintf("LOGIN %s (use test/test)<br/>", ar.Client.Id)))
-	w.Write([]byte(fmt.Sprintf("<form action=\"/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s\" method=\"POST\">",
-		ar.Type, ar.Client.Id, ar.State, url.QueryEscape(ar.RedirectUri))))
-
-	w.Write([]byte("Login: <input type=\"text\" name=\"login\" /><br/>"))
-	w.Write([]byte("Password: <input type=\"password\" name=\"password\" /><br/>"))
-	w.Write([]byte("<input type=\"submit\"/>"))
-
-	w.Write([]byte("</form>"))
-
-	w.Write([]byte("</body></html>"))
-
-	return false
 }
