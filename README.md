@@ -17,41 +17,45 @@ The library implements the majority of the specification, like authorization and
 
 ### Example Server
 
-	import "github.com/RangelReale/osin"
+````go
+import "github.com/RangelReale/osin"
 
-	// TestStorage implements the "osin.Storage" interface
-	server := osin.NewServer(osin.NewServerConfig(), &TestStorage{})
+// TestStorage implements the "osin.Storage" interface
+server := osin.NewServer(osin.NewServerConfig(), &TestStorage{})
 
-	// Authorization code endpoint
-	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
-		resp := server.NewResponse()
-		if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
+// Authorization code endpoint
+http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
+	resp := server.NewResponse()
+	if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
 
-			// HANDLE LOGIN PAGE HERE
+		// HANDLE LOGIN PAGE HERE
 
-			ar.Authorized = true
-			server.FinishAuthorizeRequest(resp, r, ar)
-		}
-		osin.OutputJSON(resp, w, r)
-	})
+		ar.Authorized = true
+		server.FinishAuthorizeRequest(resp, r, ar)
+	}
+	osin.OutputJSON(resp, w, r)
+})
 
-	// Access token endpoint
-	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
-		resp := server.NewResponse()
-		if ar := server.HandleAccessRequest(resp, r); ar != nil {
-			ar.Authorized = true
-			server.FinishAccessRequest(resp, r, ar)
-		}
-		osin.OutputJSON(resp, w, r)
-	})
+// Access token endpoint
+http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
+	resp := server.NewResponse()
+	if ar := server.HandleAccessRequest(resp, r); ar != nil {
+		ar.Authorized = true
+		server.FinishAccessRequest(resp, r, ar)
+	}
+	osin.OutputJSON(resp, w, r)
+})
 
-	http.ListenAndServe(":14000", nil)
+http.ListenAndServe(":14000", nil)
+````
 
 ### Example Access
 
 Open in your web browser:
 
-	http://localhost:14000/authorize?response_type=code&client_id=1234&redirect_url=http%3A%2F%2Flocalhost%3A14000%2Fappauth%2Fcode
+````
+http://localhost:14000/authorize?response_type=code&client_id=1234&redirect_url=http%3A%2F%2Flocalhost%3A14000%2Fappauth%2Fcode
+````
 
 ### License
 
