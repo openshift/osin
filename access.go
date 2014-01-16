@@ -337,6 +337,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 			CreatedAt:     time.Now(),
 			ExpiresIn:     ar.Expiration,
 			UserData:      ar.UserData,
+			Scope:         ar.Scope,
 		}
 
 		var err error
