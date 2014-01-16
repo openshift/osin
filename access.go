@@ -196,6 +196,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 
 	// set rest of data
 	ret.Scope = ret.AuthorizeData.Scope
+	ret.UserData = ret.AuthorizeData.UserData
 
 	return ret
 }
