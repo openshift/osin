@@ -196,6 +196,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 
 	// set rest of data
 	ret.Scope = ret.AuthorizeData.Scope
+	ret.UserData = ret.AuthorizeData.UserData
 
 	return ret
 }
@@ -326,17 +327,22 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 	if w.IsError {
 		return
 	}
-
+	redirectUri := r.Form.Get("redirect_uri")
+	// Get redirect uri from AccessRequest if it's there (e.g., refresh token request)
+	if ar.RedirectUri != "" {
+		redirectUri = ar.RedirectUri
+	}
 	if ar.Authorized {
 		// generate access token
 		ret := &AccessData{
 			Client:        ar.Client,
 			AuthorizeData: ar.AuthorizeData,
 			AccessData:    ar.AccessData,
-			RedirectUri:   r.Form.Get("redirect_uri"),
+			RedirectUri:   redirectUri,
 			CreatedAt:     time.Now(),
 			ExpiresIn:     ar.Expiration,
 			UserData:      ar.UserData,
+			Scope:         ar.Scope,
 		}
 
 		var err error

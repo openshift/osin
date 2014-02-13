@@ -2,6 +2,7 @@ package osin
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -95,16 +96,18 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 
 func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeRequest {
 	// create the authorization request
+	unescapedUri, err := url.QueryUnescape(r.Form.Get("redirect_uri"))
+	if err != nil {
+		unescapedUri = ""
+	}
 	ret := &AuthorizeRequest{
 		Type:        CODE,
 		State:       r.Form.Get("state"),
 		Scope:       r.Form.Get("scope"),
-		RedirectUri: r.Form.Get("redirect_uri"),
+		RedirectUri: unescapedUri,
 		Authorized:  false,
 		Expiration:  s.Config.AuthorizationExpiration,
 	}
-
-	var err error
 
 	// must have a valid client
 	ret.Client, err = s.Storage.GetClient(r.Form.Get("client_id"))
@@ -140,17 +143,19 @@ func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeReque
 
 func (s *Server) handleTokenRequest(w *Response, r *http.Request) *AuthorizeRequest {
 	// create the authorization request
+	unescapedUri, err := url.QueryUnescape(r.Form.Get("redirect_uri"))
+	if err != nil {
+		unescapedUri = ""
+	}
 	ret := &AuthorizeRequest{
 		Type:        TOKEN,
 		State:       r.Form.Get("state"),
 		Scope:       r.Form.Get("scope"),
-		RedirectUri: r.Form.Get("redirect_uri"),
+		RedirectUri: unescapedUri,
 		Authorized:  false,
 		// this type will generate a token directly, use access token expiration instead.
 		Expiration: s.Config.AccessExpiration,
 	}
-
-	var err error
 
 	// must have a valid client
 	ret.Client, err = s.Storage.GetClient(r.Form.Get("client_id"))
