@@ -12,7 +12,11 @@ import (
 )
 
 func main() {
-	server := osin.NewServer(osin.NewServerConfig(), example.NewTestStorage())
+	cfg := osin.NewServerConfig()
+	cfg.AllowGetAccessRequest = true
+	cfg.AllowClientSecretInParams = true
+
+	server := osin.NewServer(cfg, example.NewTestStorage())
 
 	// Authorization code endpoint
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +76,7 @@ func main() {
 			jr := make(map[string]interface{})
 
 			// build access code url
-			aurl := fmt.Sprintf("/token?grant_type=authorization_code&client_id=1234&state=xyz&redirect_uri=%s&code=%s",
+			aurl := fmt.Sprintf("/token?grant_type=authorization_code&client_id=1234&client_secret=aabbccdd&state=xyz&redirect_uri=%s&code=%s",
 				url.QueryEscape("http://localhost:14000/appauth/code"), url.QueryEscape(code))
 
 			// if parse, download and parse json
