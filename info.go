@@ -29,7 +29,7 @@ func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	var err error
 
 	// load access data
-	ret.AccessData, err = s.Storage.LoadAccess(ret.Code)
+	ret.AccessData, err = s.Storage.LoadAccess(ret.Code, r)
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err

@@ -1,41 +1,43 @@
 package osin
 
-import ()
+import (
+	"net/http"
+)
 
 // Storage interface
 type Storage interface {
 
 	// GetClient loads the client by id (client_id)
-	GetClient(id string) (*Client, error)
+	GetClient(id string, r *http.Request) (*Client, error)
 
 	// SaveAuthorize saves authorize data.
-	SaveAuthorize(*AuthorizeData) error
+	SaveAuthorize(d *AuthorizeData, r *http.Request) error
 
 	// LoadAuthorize looks up AuthorizeData by a code.
 	// Client information MUST be loaded together.
 	// Optionally can return error if expired.
-	LoadAuthorize(code string) (*AuthorizeData, error)
+	LoadAuthorize(code string, r *http.Request) (*AuthorizeData, error)
 
 	// RemoveAuthorize revokes or deletes the authorization code.
-	RemoveAuthorize(code string) error
+	RemoveAuthorize(code string, r *http.Request) error
 
 	// SaveAccess writes AccessData.
 	// If RefreshToken is not blank, it must save in a way that can be loaded using LoadRefresh.
-	SaveAccess(*AccessData) error
+	SaveAccess(d *AccessData, r *http.Request) error
 
 	// LoadAccess retrieves access data by token. Client information MUST be loaded together.
 	// AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 	// Optionally can return error if expired.
-	LoadAccess(token string) (*AccessData, error)
+	LoadAccess(token string, r *http.Request) (*AccessData, error)
 
 	// RemoveAccess revokes or deletes an AccessData.
-	RemoveAccess(token string) error
+	RemoveAccess(token string, r *http.Request) error
 
 	// LoadRefresh retrieves refresh AccessData. Client information MUST be loaded together.
 	// AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 	// Optionally can return error if expired.
-	LoadRefresh(token string) (*AccessData, error)
+	LoadRefresh(token string, r *http.Request) (*AccessData, error)
 
 	// RemoveRefresh revokes or deletes refresh AccessData.
-	RemoveRefresh(token string) error
+	RemoveRefresh(token string, r *http.Request) error
 }

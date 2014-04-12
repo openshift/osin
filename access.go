@@ -149,13 +149,13 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, s.Storage, w, r); ret.Client == nil {
 		return nil
 	}
 
 	// must be a valid authorization code
 	var err error
-	ret.AuthorizeData, err = s.Storage.LoadAuthorize(ret.Code)
+	ret.AuthorizeData, err = s.Storage.LoadAuthorize(ret.Code, r)
 	if err != nil {
 		w.SetError(E_INVALID_GRANT, "")
 		w.InternalError = err
@@ -224,13 +224,13 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, s.Storage, w, r); ret.Client == nil {
 		return nil
 	}
 
 	// must be a valid refresh code
 	var err error
-	ret.AccessData, err = s.Storage.LoadRefresh(ret.Code)
+	ret.AccessData, err = s.Storage.LoadRefresh(ret.Code, r)
 	if err != nil {
 		w.SetError(E_INVALID_GRANT, "")
 		w.InternalError = err
@@ -286,7 +286,7 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, s.Storage, w, r); ret.Client == nil {
 		return nil
 	}
 
@@ -312,7 +312,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, s.Storage, w, r); ret.Client == nil {
 		return nil
 	}
 
@@ -356,7 +356,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		}
 
 		// save access token
-		if err = s.Storage.SaveAccess(ret); err != nil {
+		if err = s.Storage.SaveAccess(ret, r); err != nil {
 			w.SetError(E_SERVER_ERROR, "")
 			w.InternalError = err
 			return
@@ -364,15 +364,15 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 
 		// remove authorization token
 		if ret.AuthorizeData != nil {
-			s.Storage.RemoveAuthorize(ret.AuthorizeData.Code)
+			s.Storage.RemoveAuthorize(ret.AuthorizeData.Code, r)
 		}
 
 		// remove previous access token
 		if ret.AccessData != nil {
 			if ret.AccessData.RefreshToken != "" {
-				s.Storage.RemoveRefresh(ret.AccessData.RefreshToken)
+				s.Storage.RemoveRefresh(ret.AccessData.RefreshToken, r)
 			}
-			s.Storage.RemoveAccess(ret.AccessData.AccessToken)
+			s.Storage.RemoveAccess(ret.AccessData.AccessToken, r)
 		}
 
 		// output data
@@ -394,8 +394,8 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 
 // getClient looks up and authenticates the basic auth using the given
 // storage. Sets an error on the response if auth fails or a server error occurs.
-func getClient(auth *BasicAuth, storage Storage, w *Response) *Client {
-	client, err := storage.GetClient(auth.Username)
+func getClient(auth *BasicAuth, storage Storage, w *Response, r *http.Request) *Client {
+	client, err := storage.GetClient(auth.Username, r)
 	if err != nil {
 		w.SetError(E_SERVER_ERROR, "")
 		w.InternalError = err
