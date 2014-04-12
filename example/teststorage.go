@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/RangelReale/osin"
+	"net/http"
 )
 
 type TestStorage struct {
@@ -30,7 +31,7 @@ func NewTestStorage() *TestStorage {
 	return r
 }
 
-func (s *TestStorage) GetClient(id string) (*osin.Client, error) {
+func (s *TestStorage) GetClient(id string, r *http.Request) (*osin.Client, error) {
 	fmt.Printf("GetClient: %s\n", id)
 	if c, ok := s.clients[id]; ok {
 		return c, nil
@@ -38,13 +39,13 @@ func (s *TestStorage) GetClient(id string) (*osin.Client, error) {
 	return nil, errors.New("Client not found")
 }
 
-func (s *TestStorage) SaveAuthorize(data *osin.AuthorizeData) error {
+func (s *TestStorage) SaveAuthorize(data *osin.AuthorizeData, r *http.Request) error {
 	fmt.Printf("SaveAuthorize: %s\n", data.Code)
 	s.authorize[data.Code] = data
 	return nil
 }
 
-func (s *TestStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
+func (s *TestStorage) LoadAuthorize(code string, r *http.Request) (*osin.AuthorizeData, error) {
 	fmt.Printf("LoadAuthorize: %s\n", code)
 	if d, ok := s.authorize[code]; ok {
 		return d, nil
@@ -52,13 +53,13 @@ func (s *TestStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
 	return nil, errors.New("Authorize not found")
 }
 
-func (s *TestStorage) RemoveAuthorize(code string) error {
+func (s *TestStorage) RemoveAuthorize(code string, r *http.Request) error {
 	fmt.Printf("RemoveAuthorize: %s\n", code)
 	delete(s.authorize, code)
 	return nil
 }
 
-func (s *TestStorage) SaveAccess(data *osin.AccessData) error {
+func (s *TestStorage) SaveAccess(data *osin.AccessData, r *http.Request) error {
 	fmt.Printf("SaveAccess: %s\n", data.AccessToken)
 	s.access[data.AccessToken] = data
 	if data.RefreshToken != "" {
@@ -67,7 +68,7 @@ func (s *TestStorage) SaveAccess(data *osin.AccessData) error {
 	return nil
 }
 
-func (s *TestStorage) LoadAccess(code string) (*osin.AccessData, error) {
+func (s *TestStorage) LoadAccess(code string, r *http.Request) (*osin.AccessData, error) {
 	fmt.Printf("LoadAccess: %s\n", code)
 	if d, ok := s.access[code]; ok {
 		return d, nil
@@ -81,15 +82,15 @@ func (s *TestStorage) RemoveAccess(code string) error {
 	return nil
 }
 
-func (s *TestStorage) LoadRefresh(code string) (*osin.AccessData, error) {
+func (s *TestStorage) LoadRefresh(code string, r *http.Request) (*osin.AccessData, error) {
 	fmt.Printf("LoadRefresh: %s\n", code)
 	if d, ok := s.refresh[code]; ok {
-		return s.LoadAccess(d)
+		return s.LoadAccess(d, r)
 	}
 	return nil, errors.New("Refresh not found")
 }
 
-func (s *TestStorage) RemoveRefresh(code string) error {
+func (s *TestStorage) RemoveRefresh(code string, r *http.Request) error {
 	fmt.Printf("RemoveRefresh: %s\n", code)
 	delete(s.refresh, code)
 	return nil
