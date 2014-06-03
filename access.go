@@ -161,6 +161,10 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		w.InternalError = err
 		return nil
 	}
+	if ret.AuthorizeData == nil {
+		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		return nil
+	}
 	if ret.AuthorizeData.Client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
