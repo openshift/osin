@@ -240,6 +240,10 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 		w.InternalError = err
 		return nil
 	}
+	if ret.AccessData == nil {
+		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		return nil
+	}
 	if ret.AccessData.Client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
