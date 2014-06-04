@@ -257,11 +257,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	if ret.AccessData.Client.Id != ret.Client.Id {
 		w.SetError(E_INVALID_CLIENT, "")
 		return nil
-	}
-	// if set, scope must be the same as the previous token
-	if ret.Scope != "" && ret.Scope != ret.AccessData.Scope {
-		w.SetError(E_INVALID_SCOPE, "")
-		return nil
+
 	}
 
 	// set rest of data
