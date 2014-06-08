@@ -16,8 +16,6 @@ func main() {
 	config := osin.NewServerConfig()
 	// goauth2 checks errors using status codes
 	config.ErrorStatusCode = 401
-	// goauth2 passes client secret in params instead of Authorization headers
-	config.AllowClientSecretInParams = true
 
 	server := osin.NewServer(config, example.NewTestStorage())
 
