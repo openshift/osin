@@ -38,6 +38,12 @@ func (s *TestStorage) GetClient(id string) (*osin.Client, error) {
 	return nil, errors.New("Client not found")
 }
 
+func (s *TestStorage) SetClient(id string, client *osin.Client) error {
+	fmt.Printf("SetClient: %s\n", id)
+	s.clients[id] = client
+	return nil
+}
+
 func (s *TestStorage) SaveAuthorize(data *osin.AuthorizeData) error {
 	fmt.Printf("SaveAuthorize: %s\n", data.Code)
 	s.authorize[data.Code] = data
