@@ -3,6 +3,7 @@ package osin
 import (
 	"errors"
 	"strconv"
+	"time"
 )
 
 type TestingStorage struct {
@@ -24,6 +25,13 @@ func NewTestingStorage() *TestingStorage {
 		Id:          "1234",
 		Secret:      "aabbccdd",
 		RedirectUri: "http://localhost:14000/appauth",
+	}
+
+	r.access["9999"] = &AccessData{
+		Client:      r.clients["1234"],
+		AccessToken: "9999",
+		ExpiresIn:   3600,
+		CreatedAt:   time.Now(),
 	}
 
 	return r
