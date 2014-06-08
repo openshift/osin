@@ -24,7 +24,7 @@ func NewTestStorage() *TestStorage {
 	r.clients["1234"] = &osin.Client{
 		Id:          "1234",
 		Secret:      "aabbccdd",
-		RedirectUri: "http://localhost:14000/appauth",
+		RedirectUri: "http://localhost:14000/appauth/code",
 	}
 
 	return r
