@@ -16,6 +16,7 @@ func main() {
 	sconfig.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN}
 	sconfig.AllowedAccessTypes = osin.AllowedAccessType{osin.AUTHORIZATION_CODE,
 		osin.REFRESH_TOKEN, osin.PASSWORD, osin.CLIENT_CREDENTIALS}
+	sconfig.AllowGetAccessRequest = true
 	server := osin.NewServer(sconfig, example.NewTestStorage())
 
 	// Authorization code endpoint
