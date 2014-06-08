@@ -81,8 +81,7 @@ func TestGetClientAuth(t *testing.T) {
 		{headerOKAuth, urlNoSecret, false, true},
 	}
 
-	for i, tt := range tests {
-		t.Log("Case", i)
+	for _, tt := range tests {
 		w := new(Response)
 		r := &http.Request{Header: tt.header, URL: tt.url}
 		r.ParseForm()

@@ -32,6 +32,19 @@ type Response struct {
 	RedirectInFragment bool
 }
 
+func NewResponse() *Response {
+	r := &Response{
+		Type:            DATA,
+		StatusCode:      200,
+		ErrorStatusCode: 200,
+		Output:          make(ResponseData),
+		Headers:         make(http.Header),
+		IsError:         false,
+	}
+	r.Headers.Add("Cache-Control", "no-store")
+	return r
+}
+
 // SetError sets an error id and description on the Response
 // state and uri are left blank
 func (r *Response) SetError(id string, description string) {
