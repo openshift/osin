@@ -1,6 +1,7 @@
 package osin
 
 import (
+	"errors"
 	"net/http"
 	"time"
 )
@@ -95,10 +96,12 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 	if r.Method == "GET" {
 		if !s.Config.AllowGetAccessRequest {
 			w.SetError(E_INVALID_REQUEST, "")
+			w.InternalError = errors.New("Request must be POST")
 			return nil
 		}
 	} else if r.Method != "POST" {
 		w.SetError(E_INVALID_REQUEST, "")
+		w.InternalError = errors.New("Request must be POST")
 		return nil
 	}
 
