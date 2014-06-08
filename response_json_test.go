@@ -8,7 +8,7 @@ import (
 )
 
 func TestResponseJSON(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://localhost:14000/apauth", nil)
+	req, err := http.NewRequest("GET", "http://localhost:14000/appauth", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func TestResponseJSON(t *testing.T) {
 }
 
 func TestErrorResponseJSON(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://localhost:14000/apauth", nil)
+	req, err := http.NewRequest("GET", "http://localhost:14000/appauth", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +88,7 @@ func TestErrorResponseJSON(t *testing.T) {
 }
 
 func TestRedirectResponseJSON(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://localhost:14000/apauth", nil)
+	req, err := http.NewRequest("GET", "http://localhost:14000/appauth", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

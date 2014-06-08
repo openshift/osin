@@ -105,6 +105,7 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 	err := r.ParseForm()
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
+		w.InternalError = err
 		return nil
 	}
 
