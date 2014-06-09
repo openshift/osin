@@ -15,7 +15,7 @@ func main() {
 	sconfig := osin.NewServerConfig()
 	sconfig.AllowedAuthorizeTypes = osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN}
 	sconfig.AllowedAccessTypes = osin.AllowedAccessType{osin.AUTHORIZATION_CODE,
-		osin.REFRESH_TOKEN, osin.PASSWORD, osin.CLIENT_CREDENTIALS}
+		osin.REFRESH_TOKEN, osin.PASSWORD, osin.CLIENT_CREDENTIALS, osin.ASSERTION}
 	sconfig.AllowGetAccessRequest = true
 	server := osin.NewServer(sconfig, example.NewTestStorage())
 
@@ -54,6 +54,10 @@ func main() {
 				}
 			case osin.CLIENT_CREDENTIALS:
 				ar.Authorized = true
+			case osin.ASSERTION:
+				if ar.AssertionType == "urn:osin.example.complete" && ar.Assertion == "osin.data" {
+					ar.Authorized = true
+				}
 			}
 			server.FinishAccessRequest(resp, r, ar)
 		}
@@ -83,6 +87,7 @@ func main() {
 		w.Write([]byte(fmt.Sprintf("<a href=\"/authorize?response_type=token&client_id=1234&state=xyz&scope=everything&redirect_uri=%s\">Implict</a><br/>", url.QueryEscape("http://localhost:14000/appauth/token"))))
 		w.Write([]byte(fmt.Sprintf("<a href=\"/appauth/password\">Password</a><br/>")))
 		w.Write([]byte(fmt.Sprintf("<a href=\"/appauth/client_credentials\">Client Credentials</a><br/>")))
+		w.Write([]byte(fmt.Sprintf("<a href=\"/appauth/assertion\">Assertion</a><br/>")))
 
 		w.Write([]byte("</body></html>"))
 	})
@@ -220,6 +225,51 @@ func main() {
 
 		// build access code url
 		aurl := fmt.Sprintf("/token?grant_type=client_credentials")
+
+		// doownload token
+		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
+			&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+			w.Write([]byte("<br/>"))
+		}
+
+		// show json error
+		if erd, ok := jr["error"]; ok {
+			w.Write([]byte(fmt.Sprintf("ERROR: %s<br/>\n", erd)))
+		}
+
+		// show json access token
+		if at, ok := jr["access_token"]; ok {
+			w.Write([]byte(fmt.Sprintf("ACCESS TOKEN: %s<br/>\n", at)))
+		}
+
+		w.Write([]byte(fmt.Sprintf("FULL RESULT: %+v<br/>\n", jr)))
+
+		if rt, ok := jr["refresh_token"]; ok {
+			rurl := fmt.Sprintf("/appauth/refresh?code=%s", rt)
+			w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Refresh Token</a><br/>", rurl)))
+		}
+
+		if at, ok := jr["access_token"]; ok {
+			rurl := fmt.Sprintf("/appauth/info?code=%s", at)
+			w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Info</a><br/>", rurl)))
+		}
+
+		w.Write([]byte("</body></html>"))
+	})
+
+	// Application destination - ASSERTION
+	http.HandleFunc("/appauth/assertion", func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+
+		w.Write([]byte("<html><body>"))
+		w.Write([]byte("APP AUTH - ASSERTION<br/>"))
+
+		jr := make(map[string]interface{})
+
+		// build access code url
+		aurl := fmt.Sprintf("/token?grant_type=assertion&assertion_type=urn:osin.example.complete&assertion=osin.data")
 
 		// doownload token
 		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),

@@ -14,6 +14,7 @@ const (
 	REFRESH_TOKEN                        = "refresh_token"
 	PASSWORD                             = "password"
 	CLIENT_CREDENTIALS                   = "client_credentials"
+	ASSERTION                            = "assertion"
 	IMPLICIT                             = "__implicit"
 )
 
@@ -28,6 +29,8 @@ type AccessRequest struct {
 	Scope         string
 	Username      string
 	Password      string
+	AssertionType string
+	Assertion     string
 
 	// Set if request is authorized
 	Authorized bool
@@ -123,6 +126,8 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 			return s.handlePasswordRequest(w, r)
 		case CLIENT_CREDENTIALS:
 			return s.handleClientCredentialsRequest(w, r)
+		case ASSERTION:
+			return s.handleAssertionRequest(w, r)
 		}
 	}
 
@@ -321,6 +326,40 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+	}
+
+	// must have a valid client
+	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+		return nil
+	}
+
+	// set redirect uri
+	ret.RedirectUri = ret.Client.RedirectUri
+
+	return ret
+}
+
+func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessRequest {
+	// get client authentication
+	auth := getClientAuth(w, r, s.Config.AllowClientSecretInParams)
+	if auth == nil {
+		return nil
+	}
+
+	// generate access token
+	ret := &AccessRequest{
+		Type:            ASSERTION,
+		Scope:           r.Form.Get("scope"),
+		AssertionType:   r.Form.Get("assertion_type"),
+		Assertion:       r.Form.Get("assertion"),
+		GenerateRefresh: false, // assertion should NOT generate a refresh token, per the RFC
+		Expiration:      s.Config.AccessExpiration,
+	}
+
+	// "assertion_type" and "assertion" is required
+	if ret.AssertionType == "" || ret.Assertion == "" {
+		w.SetError(E_INVALID_GRANT, "")
+		return nil
 	}
 
 	// must have a valid client
