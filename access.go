@@ -204,6 +204,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	}
 	if ret.AuthorizeData.RedirectUri != ret.RedirectUri {
 		w.SetError(E_INVALID_REQUEST, "")
+		w.InternalError = errors.New("Redirect uri is different")
 		return nil
 	}
 
@@ -265,6 +266,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	// client must be the same as the previous token
 	if ret.AccessData.Client.Id != ret.Client.Id {
 		w.SetError(E_INVALID_CLIENT, "")
+		w.InternalError = errors.New("Client id must be the same from previous token")
 		return nil
 
 	}
