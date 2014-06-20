@@ -10,6 +10,9 @@ type Server struct {
 	Storage           Storage
 	AuthorizeTokenGen AuthorizeTokenGen
 	AccessTokenGen    AccessTokenGen
+	AuthorizeOutput   AuthorizeOutput
+	AccessOutput      AccessOutput
+	InfoOutput        InfoOutput
 }
 
 // NewServer creates a new server instance

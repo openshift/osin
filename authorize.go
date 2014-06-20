@@ -75,6 +75,11 @@ type AuthorizeTokenGen interface {
 	GenerateAuthorizeToken(data *AuthorizeData) (string, error)
 }
 
+// AuthorizeOutput allows processing the Response object before finishing
+type AuthorizeOutput interface {
+	ProcessAuthorizeOutput(w *Response, r *http.Request, ar *AuthorizeRequest, ad *AuthorizeData)
+}
+
 // HandleAuthorizeRequest is the main http.HandlerFunc for handling
 // authorization requests
 func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *AuthorizeRequest {
@@ -247,6 +252,10 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			// redirect with code
 			w.Output["code"] = ret.Code
 			w.Output["state"] = ret.State
+
+			if s.AuthorizeOutput != nil {
+				s.AuthorizeOutput.ProcessAuthorizeOutput(w, r, ar, ret)
+			}
 		}
 	} else {
 		// redirect with error

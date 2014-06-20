@@ -11,6 +11,11 @@ type InfoRequest struct {
 	AccessData *AccessData // AccessData associated with Code
 }
 
+// InfoOutput allows processing the Response object before finishing
+type InfoOutput interface {
+	ProcessInfoOutput(w *Response, r *http.Request, ir *InfoRequest)
+}
+
 // HandleInfoRequest is an http.HandlerFunc for server information
 // NOT an RFC specification.
 func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
@@ -68,5 +73,9 @@ func (s *Server) FinishInfoRequest(w *Response, r *http.Request, ir *InfoRequest
 	}
 	if ir.AccessData.Scope != "" {
 		w.Output["scope"] = ir.AccessData.Scope
+	}
+
+	if s.InfoOutput != nil {
+		s.InfoOutput.ProcessInfoOutput(w, r, ir)
 	}
 }

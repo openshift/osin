@@ -93,6 +93,11 @@ type AccessTokenGen interface {
 	GenerateAccessToken(data *AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error)
 }
 
+// AccessOutput allows processing the Response object before finishing
+type AccessOutput interface {
+	ProcessAccessOutput(w *Response, r *http.Request, ar *AccessRequest, ad *AccessData)
+}
+
 // HandleAccessRequest is the http.HandlerFunc for handling access token requests
 func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessRequest {
 	// Only allow GET or POST
@@ -437,6 +442,10 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		}
 		if ar.Scope != "" {
 			w.Output["scope"] = ar.Scope
+		}
+
+		if s.AccessOutput != nil {
+			s.AccessOutput.ProcessAccessOutput(w, r, ar, ret)
 		}
 	} else {
 		w.SetError(E_ACCESS_DENIED, "")
