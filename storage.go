@@ -4,9 +4,17 @@ import ()
 
 // Storage interface
 type Storage interface {
+	// Clone the storage if needed. For example, using mgo, you can clone the session with session.Clone
+	// to avoid concurrent access problems.
+	// This is to avoid cloning the connection at each method access.
+	// Can return itself if not a problem.
+	Clone() Storage
+
+	// Close the resources the Storate potentially holds (using Clone for example)
+	Close()
 
 	// GetClient loads the client by id (client_id)
-	GetClient(id string) (*Client, error)
+	GetClient(id string) (Client, error)
 
 	// SaveAuthorize saves authorize data.
 	SaveAuthorize(*AuthorizeData) error

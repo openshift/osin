@@ -21,7 +21,7 @@ type AccessTokenGenJWT struct {
 func (c *AccessTokenGenJWT) GenerateAccessToken(data *osin.AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error) {
 	// generate JWT access token
 	token := jwt.New(jwt.GetSigningMethod("RS256"))
-	token.Claims["cid"] = data.Client.Id
+	token.Claims["cid"] = data.Client.GetId()
 	token.Claims["exp"] = data.ExpireAt().Unix()
 
 	accesstoken, err = token.SignedString(c.PrivateKey)
@@ -33,7 +33,7 @@ func (c *AccessTokenGenJWT) GenerateAccessToken(data *osin.AccessData, generater
 
 		// generate JWT access token
 		token = jwt.New(jwt.GetSigningMethod("RS256"))
-		token.Claims["cid"] = data.Client.Id
+		token.Claims["cid"] = data.Client.GetId()
 		token.Claims["at"] = accesstoken
 		token.Claims["exp"] = data.ExpireAt().Unix()
 
@@ -52,6 +52,8 @@ func main() {
 	// Authorization code endpoint
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
 		resp := server.NewResponse()
+		defer resp.Close()
+
 		if ar := server.HandleAuthorizeRequest(resp, r); ar != nil {
 			if !example.HandleLoginPage(ar, w, r) {
 				return
@@ -68,6 +70,8 @@ func main() {
 	// Access token endpoint
 	http.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
 		resp := server.NewResponse()
+		defer resp.Close()
+
 		if ar := server.HandleAccessRequest(resp, r); ar != nil {
 			ar.Authorized = true
 			server.FinishAccessRequest(resp, r, ar)
@@ -81,6 +85,8 @@ func main() {
 	// Information endpoint
 	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
 		resp := server.NewResponse()
+		defer resp.Close()
+
 		if ir := server.HandleInfoRequest(resp, r); ir != nil {
 			server.FinishInfoRequest(resp, r, ir)
 		}

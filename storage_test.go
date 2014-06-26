@@ -7,7 +7,7 @@ import (
 )
 
 type TestingStorage struct {
-	clients   map[string]*Client
+	clients   map[string]Client
 	authorize map[string]*AuthorizeData
 	access    map[string]*AccessData
 	refresh   map[string]string
@@ -15,13 +15,13 @@ type TestingStorage struct {
 
 func NewTestingStorage() *TestingStorage {
 	r := &TestingStorage{
-		clients:   make(map[string]*Client),
+		clients:   make(map[string]Client),
 		authorize: make(map[string]*AuthorizeData),
 		access:    make(map[string]*AccessData),
 		refresh:   make(map[string]string),
 	}
 
-	r.clients["1234"] = &Client{
+	r.clients["1234"] = &DefaultClient{
 		Id:          "1234",
 		Secret:      "aabbccdd",
 		RedirectUri: "http://localhost:14000/appauth",
@@ -58,14 +58,21 @@ func NewTestingStorage() *TestingStorage {
 	return r
 }
 
-func (s *TestingStorage) GetClient(id string) (*Client, error) {
+func (s *TestingStorage) Clone() Storage {
+	return s
+}
+
+func (s *TestingStorage) Close() {
+}
+
+func (s *TestingStorage) GetClient(id string) (Client, error) {
 	if c, ok := s.clients[id]; ok {
 		return c, nil
 	}
 	return nil, errors.New("Client not found")
 }
 
-func (s *TestingStorage) SetClient(id string, client *Client) error {
+func (s *TestingStorage) SetClient(id string, client Client) error {
 	s.clients[id] = client
 	return nil
 }

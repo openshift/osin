@@ -17,7 +17,7 @@ const (
 // Authorize request information
 type AuthorizeRequest struct {
 	Type        AuthorizeRequestType
-	Client      *Client
+	Client      Client
 	Scope       string
 	RedirectUri string
 	State       string
@@ -36,7 +36,7 @@ type AuthorizeRequest struct {
 // Authorization data
 type AuthorizeData struct {
 	// Client information
-	Client *Client
+	Client Client
 
 	// Authorization code
 	Code string
@@ -110,7 +110,7 @@ func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeReque
 	}
 
 	// must have a valid client
-	ret.Client, err = s.Storage.GetClient(r.Form.Get("client_id"))
+	ret.Client, err = w.Storage.GetClient(r.Form.Get("client_id"))
 	if err != nil {
 		w.SetErrorState(E_SERVER_ERROR, "", ret.State)
 		w.InternalError = err
@@ -120,19 +120,19 @@ func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeReque
 		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
 		return nil
 	}
-	if ret.Client.RedirectUri == "" {
+	if ret.Client.GetRedirectUri() == "" {
 		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
 		return nil
 	}
 
 	// force redirect response to client redirecturl first
-	w.SetRedirect(ret.Client.RedirectUri)
+	w.SetRedirect(ret.Client.GetRedirectUri())
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.RedirectUri
+		ret.RedirectUri = ret.Client.GetRedirectUri()
 	}
-	if err = ValidateUri(ret.Client.RedirectUri, ret.RedirectUri); err != nil {
+	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
 		w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
 		w.InternalError = err
 		return nil
@@ -158,7 +158,7 @@ func (s *Server) handleTokenRequest(w *Response, r *http.Request) *AuthorizeRequ
 	}
 
 	// must have a valid client
-	ret.Client, err = s.Storage.GetClient(r.Form.Get("client_id"))
+	ret.Client, err = w.Storage.GetClient(r.Form.Get("client_id"))
 	if err != nil {
 		w.SetErrorState(E_SERVER_ERROR, "", ret.State)
 		w.InternalError = err
@@ -168,19 +168,19 @@ func (s *Server) handleTokenRequest(w *Response, r *http.Request) *AuthorizeRequ
 		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
 		return nil
 	}
-	if ret.Client.RedirectUri == "" {
+	if ret.Client.GetRedirectUri() == "" {
 		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
 		return nil
 	}
 
 	// force redirect response to client redirecturl first
-	w.SetRedirect(ret.Client.RedirectUri)
+	w.SetRedirect(ret.Client.GetRedirectUri())
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.RedirectUri
+		ret.RedirectUri = ret.Client.GetRedirectUri()
 	}
-	if err = ValidateUri(ret.Client.RedirectUri, ret.RedirectUri); err != nil {
+	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
 		w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
 		w.InternalError = err
 		return nil
@@ -238,7 +238,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			ret.Code = code
 
 			// save authorization token
-			if err = s.Storage.SaveAuthorize(ret); err != nil {
+			if err = w.Storage.SaveAuthorize(ret); err != nil {
 				w.SetErrorState(E_SERVER_ERROR, "", ar.State)
 				w.InternalError = err
 				return

@@ -7,7 +7,7 @@ import (
 )
 
 type TestStorage struct {
-	clients   map[string]*osin.Client
+	clients   map[string]osin.Client
 	authorize map[string]*osin.AuthorizeData
 	access    map[string]*osin.AccessData
 	refresh   map[string]string
@@ -15,13 +15,13 @@ type TestStorage struct {
 
 func NewTestStorage() *TestStorage {
 	r := &TestStorage{
-		clients:   make(map[string]*osin.Client),
+		clients:   make(map[string]osin.Client),
 		authorize: make(map[string]*osin.AuthorizeData),
 		access:    make(map[string]*osin.AccessData),
 		refresh:   make(map[string]string),
 	}
 
-	r.clients["1234"] = &osin.Client{
+	r.clients["1234"] = &osin.DefaultClient{
 		Id:          "1234",
 		Secret:      "aabbccdd",
 		RedirectUri: "http://localhost:14000/appauth",
@@ -30,7 +30,14 @@ func NewTestStorage() *TestStorage {
 	return r
 }
 
-func (s *TestStorage) GetClient(id string) (*osin.Client, error) {
+func (s *TestStorage) Clone() osin.Storage {
+	return s
+}
+
+func (s *TestStorage) Close() {
+}
+
+func (s *TestStorage) GetClient(id string) (osin.Client, error) {
 	fmt.Printf("GetClient: %s\n", id)
 	if c, ok := s.clients[id]; ok {
 		return c, nil
@@ -38,7 +45,7 @@ func (s *TestStorage) GetClient(id string) (*osin.Client, error) {
 	return nil, errors.New("Client not found")
 }
 
-func (s *TestStorage) SetClient(id string, client *osin.Client) error {
+func (s *TestStorage) SetClient(id string, client osin.Client) error {
 	fmt.Printf("SetClient: %s\n", id)
 	s.clients[id] = client
 	return nil
