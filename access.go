@@ -195,9 +195,9 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.GetRedirectUri()
+		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 	}
-	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
+	if err = ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
 		return nil
@@ -310,7 +310,7 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.GetRedirectUri()
+	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 
 	return ret
 }
@@ -336,7 +336,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.GetRedirectUri()
+	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 
 	return ret
 }
@@ -370,7 +370,7 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.GetRedirectUri()
+	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 
 	return ret
 }

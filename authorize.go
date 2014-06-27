@@ -126,13 +126,13 @@ func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeReque
 	}
 
 	// force redirect response to client redirecturl first
-	w.SetRedirect(ret.Client.GetRedirectUri())
+	w.SetRedirect(FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator))
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.GetRedirectUri()
+		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 	}
-	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
+	if err = ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
 		w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
 		w.InternalError = err
 		return nil
@@ -174,13 +174,13 @@ func (s *Server) handleTokenRequest(w *Response, r *http.Request) *AuthorizeRequ
 	}
 
 	// force redirect response to client redirecturl first
-	w.SetRedirect(ret.Client.GetRedirectUri())
+	w.SetRedirect(FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator))
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.GetRedirectUri()
+		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 	}
-	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
+	if err = ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
 		w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
 		w.InternalError = err
 		return nil
