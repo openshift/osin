@@ -30,9 +30,12 @@ type Response struct {
 	IsError            bool
 	InternalError      error
 	RedirectInFragment bool
+
+	// Storage to use in this response - required
+	Storage Storage
 }
 
-func NewResponse() *Response {
+func NewResponse(storage Storage) *Response {
 	r := &Response{
 		Type:            DATA,
 		StatusCode:      200,
@@ -40,6 +43,7 @@ func NewResponse() *Response {
 		Output:          make(ResponseData),
 		Headers:         make(http.Header),
 		IsError:         false,
+		Storage:         storage.Clone(),
 	}
 	r.Headers.Add("Cache-Control", "no-store")
 	return r
@@ -119,4 +123,8 @@ func (r *Response) GetRedirectUrl() (string, error) {
 	}
 
 	return u.String(), nil
+}
+
+func (r *Response) Close() {
+	r.Storage.Close()
 }

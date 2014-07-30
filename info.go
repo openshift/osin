@@ -29,7 +29,7 @@ func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	var err error
 
 	// load access data
-	ret.AccessData, err = s.Storage.LoadAccess(ret.Code)
+	ret.AccessData, err = w.Storage.LoadAccess(ret.Code)
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
@@ -39,7 +39,7 @@ func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if ret.AccessData.Client.RedirectUri == "" {
+	if ret.AccessData.Client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
@@ -59,7 +59,7 @@ func (s *Server) FinishInfoRequest(w *Response, r *http.Request, ir *InfoRequest
 	}
 
 	// output data
-	w.Output["client_id"] = ir.AccessData.Client.Id
+	w.Output["client_id"] = ir.AccessData.Client.GetId()
 	w.Output["access_token"] = ir.AccessData.AccessToken
 	w.Output["token_type"] = s.Config.TokenType
 	w.Output["expires_in"] = ir.AccessData.CreatedAt.Add(time.Duration(ir.AccessData.ExpiresIn)*time.Second).Sub(time.Now()) / time.Second

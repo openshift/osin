@@ -22,7 +22,7 @@ const (
 type AccessRequest struct {
 	Type          AccessRequestType
 	Code          string
-	Client        *Client
+	Client        Client
 	AuthorizeData *AuthorizeData
 	AccessData    *AccessData
 	RedirectUri   string
@@ -48,7 +48,7 @@ type AccessRequest struct {
 // AccessData represents an access grant (tokens, expiration, client, etc)
 type AccessData struct {
 	// Client information
-	Client *Client
+	Client Client
 
 	// Authorize data, for authorization code
 	AuthorizeData *AuthorizeData
@@ -158,13 +158,13 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
 		return nil
 	}
 
 	// must be a valid authorization code
 	var err error
-	ret.AuthorizeData, err = s.Storage.LoadAuthorize(ret.Code)
+	ret.AuthorizeData, err = w.Storage.LoadAuthorize(ret.Code)
 	if err != nil {
 		w.SetError(E_INVALID_GRANT, "")
 		w.InternalError = err
@@ -178,7 +178,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if ret.AuthorizeData.Client.RedirectUri == "" {
+	if ret.AuthorizeData.Client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
@@ -188,16 +188,16 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	}
 
 	// code must be from the client
-	if ret.AuthorizeData.Client.Id != ret.Client.Id {
+	if ret.AuthorizeData.Client.GetId() != ret.Client.GetId() {
 		w.SetError(E_INVALID_GRANT, "")
 		return nil
 	}
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.RedirectUri
+		ret.RedirectUri = ret.Client.GetRedirectUri()
 	}
-	if err = ValidateUri(ret.Client.RedirectUri, ret.RedirectUri); err != nil {
+	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
 		return nil
@@ -238,13 +238,13 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
 		return nil
 	}
 
 	// must be a valid refresh code
 	var err error
-	ret.AccessData, err = s.Storage.LoadRefresh(ret.Code)
+	ret.AccessData, err = w.Storage.LoadRefresh(ret.Code)
 	if err != nil {
 		w.SetError(E_INVALID_GRANT, "")
 		w.InternalError = err
@@ -258,13 +258,13 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if ret.AccessData.Client.RedirectUri == "" {
+	if ret.AccessData.Client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
 
 	// client must be the same as the previous token
-	if ret.AccessData.Client.Id != ret.Client.Id {
+	if ret.AccessData.Client.GetId() != ret.Client.GetId() {
 		w.SetError(E_INVALID_CLIENT, "")
 		w.InternalError = errors.New("Client id must be the same from previous token")
 		return nil
@@ -305,12 +305,12 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
 		return nil
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.RedirectUri
+	ret.RedirectUri = ret.Client.GetRedirectUri()
 
 	return ret
 }
@@ -331,12 +331,12 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
 		return nil
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.RedirectUri
+	ret.RedirectUri = ret.Client.GetRedirectUri()
 
 	return ret
 }
@@ -365,12 +365,12 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 	}
 
 	// must have a valid client
-	if ret.Client = getClient(auth, s.Storage, w); ret.Client == nil {
+	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
 		return nil
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.RedirectUri
+	ret.RedirectUri = ret.Client.GetRedirectUri()
 
 	return ret
 }
@@ -409,7 +409,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		}
 
 		// save access token
-		if err = s.Storage.SaveAccess(ret); err != nil {
+		if err = w.Storage.SaveAccess(ret); err != nil {
 			w.SetError(E_SERVER_ERROR, "")
 			w.InternalError = err
 			return
@@ -417,15 +417,15 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 
 		// remove authorization token
 		if ret.AuthorizeData != nil {
-			s.Storage.RemoveAuthorize(ret.AuthorizeData.Code)
+			w.Storage.RemoveAuthorize(ret.AuthorizeData.Code)
 		}
 
 		// remove previous access token
 		if ret.AccessData != nil {
 			if ret.AccessData.RefreshToken != "" {
-				s.Storage.RemoveRefresh(ret.AccessData.RefreshToken)
+				w.Storage.RemoveRefresh(ret.AccessData.RefreshToken)
 			}
-			s.Storage.RemoveAccess(ret.AccessData.AccessToken)
+			w.Storage.RemoveAccess(ret.AccessData.AccessToken)
 		}
 
 		// output data
@@ -447,7 +447,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 
 // getClient looks up and authenticates the basic auth using the given
 // storage. Sets an error on the response if auth fails or a server error occurs.
-func getClient(auth *BasicAuth, storage Storage, w *Response) *Client {
+func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 	client, err := storage.GetClient(auth.Username)
 	if err != nil {
 		w.SetError(E_SERVER_ERROR, "")
@@ -458,11 +458,11 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) *Client {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if client.Secret != auth.Password {
+	if client.GetSecret() != auth.Password {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if client.RedirectUri == "" {
+	if client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
