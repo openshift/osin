@@ -458,7 +458,7 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if client.GetSecret() != auth.Password {
+	if client.GetRequiresSecret() && client.GetSecret() != auth.Password {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
