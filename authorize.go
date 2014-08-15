@@ -31,6 +31,9 @@ type AuthorizeRequest struct {
 
 	// Data to be passed to storage. Not used by the library.
 	UserData interface{}
+
+	// Raw *http.Request for special use
+	Raw *http.Request
 }
 
 // Authorization data
@@ -107,6 +110,7 @@ func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeReque
 		RedirectUri: unescapedUri,
 		Authorized:  false,
 		Expiration:  s.Config.AuthorizationExpiration,
+		Raw:         r,
 	}
 
 	// must have a valid client
@@ -155,6 +159,7 @@ func (s *Server) handleTokenRequest(w *Response, r *http.Request) *AuthorizeRequ
 		Authorized:  false,
 		// this type will generate a token directly, use access token expiration instead.
 		Expiration: s.Config.AccessExpiration,
+		Raw:        r,
 	}
 
 	// must have a valid client
