@@ -43,6 +43,9 @@ type AccessRequest struct {
 
 	// Data to be passed to storage. Not used by the library.
 	UserData interface{}
+
+	// HttpRequest *http.Request for special use
+	HttpRequest *http.Request
 }
 
 // AccessData represents an access grant (tokens, expiration, client, etc)
@@ -149,6 +152,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		RedirectUri:     r.Form.Get("redirect_uri"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// "code" is required
@@ -229,6 +233,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// "refresh_token" is required
@@ -296,6 +301,7 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// "username" and "password" is required
@@ -328,6 +334,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// must have a valid client
@@ -356,6 +363,7 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 		Assertion:       r.Form.Get("assertion"),
 		GenerateRefresh: false, // assertion should NOT generate a refresh token, per the RFC
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// "assertion_type" and "assertion" is required
