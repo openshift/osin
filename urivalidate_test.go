@@ -25,3 +25,25 @@ func TestURIValidate(t *testing.T) {
 		t.Error("V4 should have failed")
 	}
 }
+
+func TestURIListValidate(t *testing.T) {
+	// V1
+	if err := ValidateUriList("http://localhost:14000/appauth", "http://localhost:14000/appauth", ""); err != nil {
+		t.Errorf("V1: %s", err)
+	}
+
+	// V2
+	if err := ValidateUriList("http://localhost:14000/appauth", "http://localhost:14000/app", ""); err == nil {
+		t.Error("V2 should have failed")
+	}
+
+	// V3
+	if err := ValidateUriList("http://xxx:14000/appauth;http://localhost:14000/appauth", "http://localhost:14000/appauth", ";"); err != nil {
+		t.Errorf("V3: %s", err)
+	}
+
+	// V4
+	if err := ValidateUriList("http://xxx:14000/appauth;http://localhost:14000/appauth", "http://localhost:14000/app", ";"); err == nil {
+		t.Error("V4 should have failed")
+	}
+}
