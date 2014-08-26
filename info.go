@@ -35,6 +35,10 @@ func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 		w.InternalError = err
 		return nil
 	}
+	if ret.AccessData == nil {
+		w.SetError(E_INVALID_REQUEST, "")
+		return nil
+	}
 	if ret.AccessData.Client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
