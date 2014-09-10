@@ -25,12 +25,15 @@ type AccessRequest struct {
 	Client        Client
 	AuthorizeData *AuthorizeData
 	AccessData    *AccessData
-	RedirectUri   string
-	Scope         string
-	Username      string
-	Password      string
-	AssertionType string
-	Assertion     string
+
+	// Force finish to use this access data, to allow access data reuse
+	ForceAccessData *AccessData
+	RedirectUri     string
+	Scope           string
+	Username        string
+	Password        string
+	AssertionType   string
+	Assertion       string
 
 	// Set if request is authorized
 	Authorized bool
@@ -394,26 +397,31 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		redirectUri = ar.RedirectUri
 	}
 	if ar.Authorized {
-		// generate access token
-		ret := &AccessData{
-			Client:        ar.Client,
-			AuthorizeData: ar.AuthorizeData,
-			AccessData:    ar.AccessData,
-			RedirectUri:   redirectUri,
-			CreatedAt:     time.Now(),
-			ExpiresIn:     ar.Expiration,
-			UserData:      ar.UserData,
-			Scope:         ar.Scope,
-		}
-
+		var ret *AccessData
 		var err error
 
-		// generate access token
-		ret.AccessToken, ret.RefreshToken, err = s.AccessTokenGen.GenerateAccessToken(ret, ar.GenerateRefresh)
-		if err != nil {
-			w.SetError(E_SERVER_ERROR, "")
-			w.InternalError = err
-			return
+		if ar.ForceAccessData == nil {
+			// generate access token
+			ret = &AccessData{
+				Client:        ar.Client,
+				AuthorizeData: ar.AuthorizeData,
+				AccessData:    ar.AccessData,
+				RedirectUri:   redirectUri,
+				CreatedAt:     time.Now(),
+				ExpiresIn:     ar.Expiration,
+				UserData:      ar.UserData,
+				Scope:         ar.Scope,
+			}
+
+			// generate access token
+			ret.AccessToken, ret.RefreshToken, err = s.AccessTokenGen.GenerateAccessToken(ret, ar.GenerateRefresh)
+			if err != nil {
+				w.SetError(E_SERVER_ERROR, "")
+				w.InternalError = err
+				return
+			}
+		} else {
+			ret = ar.ForceAccessData
 		}
 
 		// save access token
