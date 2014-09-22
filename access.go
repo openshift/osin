@@ -25,12 +25,15 @@ type AccessRequest struct {
 	Client        Client
 	AuthorizeData *AuthorizeData
 	AccessData    *AccessData
-	RedirectUri   string
-	Scope         string
-	Username      string
-	Password      string
-	AssertionType string
-	Assertion     string
+
+	// Force finish to use this access data, to allow access data reuse
+	ForceAccessData *AccessData
+	RedirectUri     string
+	Scope           string
+	Username        string
+	Password        string
+	AssertionType   string
+	Assertion       string
 
 	// Set if request is authorized
 	Authorized bool
@@ -43,6 +46,9 @@ type AccessRequest struct {
 
 	// Data to be passed to storage. Not used by the library.
 	UserData interface{}
+
+	// HttpRequest *http.Request for special use
+	HttpRequest *http.Request
 }
 
 // AccessData represents an access grant (tokens, expiration, client, etc)
@@ -149,6 +155,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		RedirectUri:     r.Form.Get("redirect_uri"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// "code" is required
@@ -195,9 +202,9 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.GetRedirectUri()
+		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 	}
-	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
+	if err = ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
 		return nil
@@ -229,6 +236,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// "refresh_token" is required
@@ -296,6 +304,7 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// "username" and "password" is required
@@ -310,7 +319,7 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.GetRedirectUri()
+	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 
 	return ret
 }
@@ -328,6 +337,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 		Scope:           r.Form.Get("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// must have a valid client
@@ -336,7 +346,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.GetRedirectUri()
+	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 
 	return ret
 }
@@ -356,6 +366,7 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 		Assertion:       r.Form.Get("assertion"),
 		GenerateRefresh: false, // assertion should NOT generate a refresh token, per the RFC
 		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
 	}
 
 	// "assertion_type" and "assertion" is required
@@ -370,7 +381,7 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 	}
 
 	// set redirect uri
-	ret.RedirectUri = ret.Client.GetRedirectUri()
+	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 
 	return ret
 }
@@ -386,26 +397,31 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		redirectUri = ar.RedirectUri
 	}
 	if ar.Authorized {
-		// generate access token
-		ret := &AccessData{
-			Client:        ar.Client,
-			AuthorizeData: ar.AuthorizeData,
-			AccessData:    ar.AccessData,
-			RedirectUri:   redirectUri,
-			CreatedAt:     time.Now(),
-			ExpiresIn:     ar.Expiration,
-			UserData:      ar.UserData,
-			Scope:         ar.Scope,
-		}
-
+		var ret *AccessData
 		var err error
 
-		// generate access token
-		ret.AccessToken, ret.RefreshToken, err = s.AccessTokenGen.GenerateAccessToken(ret, ar.GenerateRefresh)
-		if err != nil {
-			w.SetError(E_SERVER_ERROR, "")
-			w.InternalError = err
-			return
+		if ar.ForceAccessData == nil {
+			// generate access token
+			ret = &AccessData{
+				Client:        ar.Client,
+				AuthorizeData: ar.AuthorizeData,
+				AccessData:    ar.AccessData,
+				RedirectUri:   redirectUri,
+				CreatedAt:     time.Now(),
+				ExpiresIn:     ar.Expiration,
+				UserData:      ar.UserData,
+				Scope:         ar.Scope,
+			}
+
+			// generate access token
+			ret.AccessToken, ret.RefreshToken, err = s.AccessTokenGen.GenerateAccessToken(ret, ar.GenerateRefresh)
+			if err != nil {
+				w.SetError(E_SERVER_ERROR, "")
+				w.InternalError = err
+				return
+			}
+		} else {
+			ret = ar.ForceAccessData
 		}
 
 		// save access token

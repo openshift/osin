@@ -31,6 +31,9 @@ type AuthorizeRequest struct {
 
 	// Data to be passed to storage. Not used by the library.
 	UserData interface{}
+
+	// HttpRequest *http.Request for special use
+	HttpRequest *http.Request
 }
 
 // Authorization data
@@ -107,6 +110,7 @@ func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeReque
 		RedirectUri: unescapedUri,
 		Authorized:  false,
 		Expiration:  s.Config.AuthorizationExpiration,
+		HttpRequest: r,
 	}
 
 	// must have a valid client
@@ -126,13 +130,13 @@ func (s *Server) handleCodeRequest(w *Response, r *http.Request) *AuthorizeReque
 	}
 
 	// force redirect response to client redirecturl first
-	w.SetRedirect(ret.Client.GetRedirectUri())
+	w.SetRedirect(FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator))
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.GetRedirectUri()
+		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 	}
-	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
+	if err = ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
 		w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
 		w.InternalError = err
 		return nil
@@ -154,7 +158,8 @@ func (s *Server) handleTokenRequest(w *Response, r *http.Request) *AuthorizeRequ
 		RedirectUri: unescapedUri,
 		Authorized:  false,
 		// this type will generate a token directly, use access token expiration instead.
-		Expiration: s.Config.AccessExpiration,
+		Expiration:  s.Config.AccessExpiration,
+		HttpRequest: r,
 	}
 
 	// must have a valid client
@@ -174,13 +179,13 @@ func (s *Server) handleTokenRequest(w *Response, r *http.Request) *AuthorizeRequ
 	}
 
 	// force redirect response to client redirecturl first
-	w.SetRedirect(ret.Client.GetRedirectUri())
+	w.SetRedirect(FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator))
 
 	// check redirect uri
 	if ret.RedirectUri == "" {
-		ret.RedirectUri = ret.Client.GetRedirectUri()
+		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 	}
-	if err = ValidateUri(ret.Client.GetRedirectUri(), ret.RedirectUri); err != nil {
+	if err = ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
 		w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
 		w.InternalError = err
 		return nil

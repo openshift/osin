@@ -53,6 +53,10 @@ type ServerConfig struct {
 
 	// If true allows access request using GET, else only POST - default false
 	AllowGetAccessRequest bool
+
+	// Separator to support multiple URIs in Client.GetRedirectUri().
+	// If blank (the default), don't allow multiple URIs.
+	RedirectUriSeparator string
 }
 
 // NewServerConfig returns a new ServerConfig with default configuration
