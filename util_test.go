@@ -63,14 +63,14 @@ func TestGetClientAuth(t *testing.T) {
 		{headerNoAuth, urlWithSecret, false, false},
 		{headerNoAuth, urlWithEmptySecret, true, true},
 		{headerNoAuth, urlWithEmptySecret, false, false},
-		{headerNoAuth, urlNoSecret, true, false},
+		{headerNoAuth, urlNoSecret, true, true},
 		{headerNoAuth, urlNoSecret, false, false},
 
 		{headerBadAuth, urlWithSecret, true, true},
 		{headerBadAuth, urlWithSecret, false, false},
 		{headerBadAuth, urlWithEmptySecret, true, true},
 		{headerBadAuth, urlWithEmptySecret, false, false},
-		{headerBadAuth, urlNoSecret, true, false},
+		{headerBadAuth, urlNoSecret, true, true},
 		{headerBadAuth, urlNoSecret, false, false},
 
 		{headerOKAuth, urlWithSecret, true, true},
