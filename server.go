@@ -33,7 +33,9 @@ func (s *Server) NewResponse() *Response {
 		IsError:         false,
 		Storage:         s.Storage.Clone(),
 	}
-	r.Headers.Add("Cache-Control", "no-store")
-	r.ErrorStatusCode = s.Config.ErrorStatusCode
+	r.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate")
+	r.Headers.Add("Pragma", "no-cache")
+    r.Headers.Add("Expires", "0")
+    r.ErrorStatusCode = s.Config.ErrorStatusCode
 	return r
 }
