@@ -47,7 +47,7 @@ func NewResponse(storage Storage) *Response {
 	}
 	r.Headers.Add("Cache-Control", "no-cache, no-store, must-revalidate")
 	r.Headers.Add("Pragma", "no-cache")
-    r.Headers.Add("Expires", "0")
+	r.Headers.Add("Expires", "0")
 	return r
 }
 
