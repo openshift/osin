@@ -35,7 +35,7 @@ type Response struct {
 	Storage Storage
 }
 
-func NewResponse(storage Storage) *Response {
+func NewResponse(storage Storage, httpRequest *http.Request) *Response {
 	r := &Response{
 		Type:            DATA,
 		StatusCode:      200,
@@ -43,7 +43,7 @@ func NewResponse(storage Storage) *Response {
 		Output:          make(ResponseData),
 		Headers:         make(http.Header),
 		IsError:         false,
-		Storage:         storage.Clone(),
+		Storage:         storage.Clone(httpRequest),
 	}
 	r.Headers.Add("Cache-Control", "no-store")
 	return r

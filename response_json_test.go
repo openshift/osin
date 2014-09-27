@@ -15,7 +15,7 @@ func TestResponseJSON(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	r := NewResponse(NewTestingStorage())
+	r := NewResponse(NewTestingStorage(), nil)
 	r.Output["access_token"] = "1234"
 	r.Output["token_type"] = "5678"
 
@@ -57,7 +57,7 @@ func TestErrorResponseJSON(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	r := NewResponse(NewTestingStorage())
+	r := NewResponse(NewTestingStorage(), nil)
 	r.ErrorStatusCode = 500
 	r.SetError(E_INVALID_REQUEST, "")
 
@@ -95,7 +95,7 @@ func TestRedirectResponseJSON(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	r := NewResponse(NewTestingStorage())
+	r := NewResponse(NewTestingStorage(), nil)
 	r.SetRedirect("http://localhost:14000")
 
 	err = OutputJSON(r, w, req)

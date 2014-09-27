@@ -11,7 +11,7 @@ func TestAccessAuthorizationCode(t *testing.T) {
 	sconfig.AllowedAccessTypes = AllowedAccessType{AUTHORIZATION_CODE}
 	server := NewServer(sconfig, NewTestingStorage())
 	server.AccessTokenGen = &TestingAccessTokenGen{}
-	resp := server.NewResponse()
+	resp := server.NewResponse(nil)
 
 	req, err := http.NewRequest("POST", "http://localhost:14000/appauth", nil)
 	if err != nil {
@@ -58,7 +58,7 @@ func TestAccessRefreshToken(t *testing.T) {
 	sconfig.AllowedAccessTypes = AllowedAccessType{REFRESH_TOKEN}
 	server := NewServer(sconfig, NewTestingStorage())
 	server.AccessTokenGen = &TestingAccessTokenGen{}
-	resp := server.NewResponse()
+	resp := server.NewResponse(nil)
 
 	req, err := http.NewRequest("POST", "http://localhost:14000/appauth", nil)
 	if err != nil {
@@ -105,7 +105,7 @@ func TestAccessPassword(t *testing.T) {
 	sconfig.AllowedAccessTypes = AllowedAccessType{PASSWORD}
 	server := NewServer(sconfig, NewTestingStorage())
 	server.AccessTokenGen = &TestingAccessTokenGen{}
-	resp := server.NewResponse()
+	resp := server.NewResponse(nil)
 
 	req, err := http.NewRequest("POST", "http://localhost:14000/appauth", nil)
 	if err != nil {
@@ -153,7 +153,7 @@ func TestAccessClientCredentials(t *testing.T) {
 	sconfig.AllowedAccessTypes = AllowedAccessType{CLIENT_CREDENTIALS}
 	server := NewServer(sconfig, NewTestingStorage())
 	server.AccessTokenGen = &TestingAccessTokenGen{}
-	resp := server.NewResponse()
+	resp := server.NewResponse(nil)
 
 	req, err := http.NewRequest("POST", "http://localhost:14000/appauth", nil)
 	if err != nil {

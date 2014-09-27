@@ -23,7 +23,7 @@ func NewServer(config *ServerConfig, storage Storage) *Server {
 }
 
 // NewResponse creates a new response for the server
-func (s *Server) NewResponse() *Response {
+func (s *Server) NewResponse(httpRequest *http.Request) *Response {
 	r := &Response{
 		Type:            DATA,
 		StatusCode:      200,
@@ -31,7 +31,7 @@ func (s *Server) NewResponse() *Response {
 		Output:          make(ResponseData),
 		Headers:         make(http.Header),
 		IsError:         false,
-		Storage:         s.Storage.Clone(),
+		Storage:         s.Storage.Clone(httpRequest),
 	}
 	r.Headers.Add("Cache-Control", "no-store")
 	r.ErrorStatusCode = s.Config.ErrorStatusCode

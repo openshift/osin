@@ -9,7 +9,7 @@ import (
 func TestInfo(t *testing.T) {
 	sconfig := NewServerConfig()
 	server := NewServer(sconfig, NewTestingStorage())
-	resp := server.NewResponse()
+	resp := server.NewResponse(nil)
 
 	req, err := http.NewRequest("GET", "http://localhost:14000/appauth", nil)
 	if err != nil {

@@ -1,6 +1,8 @@
 package osin
 
-import ()
+import (
+	"net/http"
+)
 
 // Storage interface
 type Storage interface {
@@ -8,7 +10,7 @@ type Storage interface {
 	// to avoid concurrent access problems.
 	// This is to avoid cloning the connection at each method access.
 	// Can return itself if not a problem.
-	Clone() Storage
+	Clone(httpRequest *http.Request) Storage
 
 	// Close the resources the Storate potentially holds (using Clone for example)
 	Close()

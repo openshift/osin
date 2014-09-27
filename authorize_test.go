@@ -11,7 +11,7 @@ func TestAuthorizeCode(t *testing.T) {
 	sconfig.AllowedAuthorizeTypes = AllowedAuthorizeType{CODE}
 	server := NewServer(sconfig, NewTestingStorage())
 	server.AuthorizeTokenGen = &TestingAuthorizeTokenGen{}
-	resp := server.NewResponse()
+	resp := server.NewResponse(nil)
 
 	req, err := http.NewRequest("GET", "http://localhost:14000/appauth", nil)
 	if err != nil {
@@ -52,7 +52,7 @@ func TestAuthorizeToken(t *testing.T) {
 	server := NewServer(sconfig, NewTestingStorage())
 	server.AuthorizeTokenGen = &TestingAuthorizeTokenGen{}
 	server.AccessTokenGen = &TestingAccessTokenGen{}
-	resp := server.NewResponse()
+	resp := server.NewResponse(nil)
 
 	req, err := http.NewRequest("GET", "http://localhost:14000/appauth", nil)
 	if err != nil {
