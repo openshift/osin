@@ -2,7 +2,6 @@ package osin
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 	"time"
 )
@@ -59,7 +58,7 @@ func NewTestingStorage() *TestingStorage {
 	return r
 }
 
-func (s *TestingStorage) Clone(httpRequest *http.Request) Storage {
+func (s *TestingStorage) Clone(sess interface{}) Storage {
 	return s
 }
 
