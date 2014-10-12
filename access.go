@@ -472,14 +472,17 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 	}
 	if client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+        w.InternalError = errors.New(E_UNAUTHORIZED_CLIENT)
 		return nil
 	}
-	if client.GetSecret() != auth.Password {
+	if client.GetRequiresSecret() && client.GetSecret() != auth.Password {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+        w.InternalError = errors.New(E_UNAUTHORIZED_CLIENT)
 		return nil
 	}
 	if client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+        w.InternalError = errors.New(E_UNAUTHORIZED_CLIENT)
 		return nil
 	}
 	return client

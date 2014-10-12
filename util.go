@@ -51,6 +51,13 @@ func getClientAuth(w *Response, r *http.Request, allowQueryParams bool) *BasicAu
 			if auth.Username != "" {
 				return auth
 			}
+		} else if _, hasClient := r.Form["client_id"]; hasClient {
+			auth := &BasicAuth{
+				Username: r.Form.Get("client_id"),
+			}
+			if auth.Username != "" {
+				return auth
+			}
 		}
 	}
 

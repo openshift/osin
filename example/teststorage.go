@@ -25,6 +25,7 @@ func NewTestStorage() *TestStorage {
 		Id:          "1234",
 		Secret:      "aabbccdd",
 		RedirectUri: "http://localhost:14000/appauth",
+        RequiresSecret: true,
 	}
 
 	return r
