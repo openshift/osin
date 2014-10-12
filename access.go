@@ -335,7 +335,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 	ret := &AccessRequest{
 		Type:            CLIENT_CREDENTIALS,
 		Scope:           r.Form.Get("scope"),
-		GenerateRefresh: true,
+		GenerateRefresh: false,
 		Expiration:      s.Config.AccessExpiration,
 		HttpRequest:     r,
 	}
