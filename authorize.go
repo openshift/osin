@@ -221,6 +221,9 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			}
 
 			s.FinishAccessRequest(w, r, ret)
+			if ar.State != "" && w.InternalError == nil {
+				w.Output["state"] = ar.State
+			}
 		} else {
 			// generate authorization token
 			ret := &AuthorizeData{
