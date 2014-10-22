@@ -117,7 +117,10 @@ func (r *Response) GetRedirectUrl() (string, error) {
 	}
 	if r.RedirectInFragment {
 		u.RawQuery = ""
-		u.Fragment = q.Encode()
+		u.Fragment, err = url.QueryUnescape(q.Encode())
+		if err != nil {
+			return "", err
+		}
 	} else {
 		u.RawQuery = q.Encode()
 	}
