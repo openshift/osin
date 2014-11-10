@@ -39,7 +39,7 @@ func NewResponse(storage Storage) *Response {
 	r := &Response{
 		Type:            DATA,
 		StatusCode:      200,
-		ErrorStatusCode: 200,
+		ErrorStatusCode: 400,
 		Output:          make(ResponseData),
 		Headers:         make(http.Header),
 		IsError:         false,

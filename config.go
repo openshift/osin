@@ -43,7 +43,7 @@ type ServerConfig struct {
 	// List of allowed access types (only AUTHORIZATION_CODE by default)
 	AllowedAccessTypes AllowedAccessType
 
-	// HTTP status code to return for errors - default 200
+	// HTTP status code to return for errors - default 400
 	// Only used if response was created from server
 	ErrorStatusCode int
 
@@ -67,7 +67,7 @@ func NewServerConfig() *ServerConfig {
 		TokenType:                 "bearer",
 		AllowedAuthorizeTypes:     AllowedAuthorizeType{CODE},
 		AllowedAccessTypes:        AllowedAccessType{AUTHORIZATION_CODE},
-		ErrorStatusCode:           200,
+		ErrorStatusCode:           400,
 		AllowClientSecretInParams: false,
 		AllowGetAccessRequest:     false,
 	}
