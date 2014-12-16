@@ -107,19 +107,19 @@ func main() {
 			return
 		}
 
-			treq := client.NewAccessRequest(osincli.AUTHORIZATION_CODE, areqdata)
+		treq := client.NewAccessRequest(osincli.AUTHORIZATION_CODE, areqdata)
 
-			// show access request url (for debugging only)
-			u2 := treq.GetTokenUrl()
-			w.Write([]byte(fmt.Sprintf("Access token URL: %s\n", u2.String())))
+		// show access request url (for debugging only)
+		u2 := treq.GetTokenUrl()
+		w.Write([]byte(fmt.Sprintf("Access token URL: %s\n", u2.String())))
 
-			// exchange the authorize token for the access token
-			ad, err := treq.GetToken()
-			if err != nil {
-				w.Write([]byte(fmt.Sprintf("ERROR: %s\n", err)))
-				return
-			}
-			w.Write([]byte(fmt.Sprintf("Access token: %+v\n", ad)))
+		// exchange the authorize token for the access token
+		ad, err := treq.GetToken()
+		if err != nil {
+			w.Write([]byte(fmt.Sprintf("ERROR: %s\n", err)))
+			return
+		}
+		w.Write([]byte(fmt.Sprintf("Access token: %+v\n", ad)))
 	})
 
 	go http.ListenAndServe(":14001", clienthttp)
