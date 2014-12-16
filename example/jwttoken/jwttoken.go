@@ -29,7 +29,9 @@ func (c *AccessTokenGenJWT) GenerateAccessToken(data *osin.AccessData, generater
 		return "", "", err
 	}
 
-	if generaterefresh {
+	if !generaterefresh {
+		return
+	}
 
 		// generate JWT access token
 		token = jwt.New(jwt.GetSigningMethod("RS256"))
@@ -41,7 +43,6 @@ func (c *AccessTokenGenJWT) GenerateAccessToken(data *osin.AccessData, generater
 		if err != nil {
 			return "", "", err
 		}
-	}
 	return
 }
 
@@ -108,8 +109,13 @@ func main() {
 
 		w.Write([]byte("<html><body>"))
 		w.Write([]byte("APP AUTH - CODE<br/>"))
+		defer w.Write([]byte("</body></html>"))
 
-		if code != "" {
+		if code == "" {
+			w.Write([]byte("Nothing to do"))
+			return
+		}
+
 			jr := make(map[string]interface{})
 
 			// build access code url
@@ -146,11 +152,6 @@ func main() {
 			curq.Add("doparse", "1")
 			cururl.RawQuery = curq.Encode()
 			w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Download Token</a><br/>", cururl.String())))
-		} else {
-			w.Write([]byte("Nothing to do"))
-		}
-
-		w.Write([]byte("</body></html>"))
 	})
 
 	http.ListenAndServe(":14000", nil)

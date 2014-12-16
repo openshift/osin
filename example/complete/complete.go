@@ -106,8 +106,13 @@ func main() {
 
 		w.Write([]byte("<html><body>"))
 		w.Write([]byte("APP AUTH - CODE<br/>"))
+		defer w.Write([]byte("</body></html>"))
 
-		if code != "" {
+		if code == "" {
+			w.Write([]byte("Nothing to do"))
+			return
+		}
+
 			jr := make(map[string]interface{})
 
 			// build access code url
@@ -154,12 +159,6 @@ func main() {
 				rurl := fmt.Sprintf("/appauth/info?code=%s", at)
 				w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Info</a><br/>", rurl)))
 			}
-
-		} else {
-			w.Write([]byte("Nothing to do"))
-		}
-
-		w.Write([]byte("</body></html>"))
 	})
 
 	// Application destination - TOKEN
@@ -316,10 +315,15 @@ func main() {
 
 		w.Write([]byte("<html><body>"))
 		w.Write([]byte("APP AUTH - REFRESH<br/>"))
+		defer w.Write([]byte("</body></html>"))
 
 		code := r.Form.Get("code")
 
-		if code != "" {
+		if code == "" {
+			w.Write([]byte("Nothing to do"))
+			return
+		}
+
 			jr := make(map[string]interface{})
 
 			// build access code url
@@ -354,11 +358,6 @@ func main() {
 				rurl := fmt.Sprintf("/appauth/info?code=%s", at)
 				w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Info</a><br/>", rurl)))
 			}
-		} else {
-			w.Write([]byte("Nothing to do"))
-		}
-
-		w.Write([]byte("</body></html>"))
 	})
 
 	// Application destination - INFO
@@ -367,10 +366,15 @@ func main() {
 
 		w.Write([]byte("<html><body>"))
 		w.Write([]byte("APP AUTH - INFO<br/>"))
+		defer w.Write([]byte("</body></html>"))
 
 		code := r.Form.Get("code")
 
-		if code != "" {
+		if code == "" {
+			w.Write([]byte("Nothing to do"))
+			return
+		}
+
 			jr := make(map[string]interface{})
 
 			// build access code url
@@ -400,11 +404,6 @@ func main() {
 				rurl := fmt.Sprintf("/appauth/refresh?code=%s", rt)
 				w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Refresh Token</a><br/>", rurl)))
 			}
-		} else {
-			w.Write([]byte("Nothing to do"))
-		}
-
-		w.Write([]byte("</body></html>"))
 	})
 
 	http.ListenAndServe(":14000", nil)

@@ -88,8 +88,12 @@ func main() {
 
 		w.Write([]byte("<html><body>"))
 		w.Write([]byte("APP AUTH - CODE<br/>"))
+		defer w.Write([]byte("</body></html>"))
 
-		if code != "" {
+		if code == "" {
+			w.Write([]byte("Nothing to do"))
+			return
+		}
 
 			var jr *oauth.Token
 			var err error
@@ -118,11 +122,6 @@ func main() {
 			curq.Add("doparse", "1")
 			cururl.RawQuery = curq.Encode()
 			w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Download Token</a><br/>", cururl.String())))
-		} else {
-			w.Write([]byte("Nothing to do"))
-		}
-
-		w.Write([]byte("</body></html>"))
 	})
 
 	http.ListenAndServe(":14000", nil)
