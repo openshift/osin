@@ -2,6 +2,7 @@ package osin
 
 import (
 	"net/http"
+        "strings"
 	"time"
 )
 
@@ -16,9 +17,18 @@ type InfoRequest struct {
 func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	r.ParseForm()
 
+        c := r.Form.Get("code")
+        if c == "" {
+            token := r.Header.Get("Authorization")
+            t := strings.Split(token, " ")
+            if t[0] == "Bearer" && len(t) == 2 {
+                c = t[1]
+            }
+        }
+
 	// generate info request
 	ret := &InfoRequest{
-		Code: r.Form.Get("code"),
+		Code: c,
 	}
 
 	if ret.Code == "" {
