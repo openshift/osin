@@ -15,10 +15,11 @@ type InfoRequest struct {
 // NOT an RFC specification.
 func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	r.ParseForm()
+	bearer := CheckBearerAuth(r)
 
 	// generate info request
 	ret := &InfoRequest{
-		Code: r.Form.Get("code"),
+		Code: bearer.Code,
 	}
 
 	if ret.Code == "" {
