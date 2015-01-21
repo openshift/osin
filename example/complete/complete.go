@@ -186,7 +186,7 @@ func main() {
 		aurl := fmt.Sprintf("/token?grant_type=password&scope=everything&username=%s&password=%s",
 			"test", "test")
 
-		// doownload token
+		// download token
 		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 			&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 		if err != nil {
@@ -231,7 +231,7 @@ func main() {
 		// build access code url
 		aurl := fmt.Sprintf("/token?grant_type=client_credentials")
 
-		// doownload token
+		// download token
 		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 			&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 		if err != nil {
@@ -276,7 +276,7 @@ func main() {
 		// build access code url
 		aurl := fmt.Sprintf("/token?grant_type=assertion&assertion_type=urn:osin.example.complete&assertion=osin.data")
 
-		// doownload token
+		// download token
 		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 			&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 		if err != nil {
@@ -329,7 +329,7 @@ func main() {
 		// build access code url
 		aurl := fmt.Sprintf("/token?grant_type=refresh_token&refresh_token=%s", url.QueryEscape(code))
 
-		// doownload token
+		// download token
 		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 			&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 		if err != nil {
@@ -380,7 +380,7 @@ func main() {
 		// build access code url
 		aurl := fmt.Sprintf("/info?code=%s", url.QueryEscape(code))
 
-		// doownload token
+		// download token
 		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 			&osin.BasicAuth{Username: "1234", Password: "aabbccdd"}, jr)
 		if err != nil {
