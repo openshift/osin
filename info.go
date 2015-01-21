@@ -17,6 +17,11 @@ func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	r.ParseForm()
 	bearer := CheckBearerAuth(r)
 
+	if bearer == nil {
+		w.SetError(E_INVALID_REQUEST, "")
+		return nil
+	}
+
 	// generate info request
 	ret := &InfoRequest{
 		Code: bearer.Code,
