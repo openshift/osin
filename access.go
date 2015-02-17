@@ -86,7 +86,12 @@ type AccessData struct {
 
 // IsExpired returns true if access expired
 func (d *AccessData) IsExpired() bool {
-	return d.CreatedAt.Add(time.Duration(d.ExpiresIn) * time.Second).Before(time.Now())
+	return d.IsExpiredAt(time.Now())
+}
+
+// IsExpiredAt returns true if access expires at time 't'
+func (d *AccessData) IsExpiredAt(t time.Time) bool {
+	return d.ExpireAt().Before(t)
 }
 
 // ExpireAt returns the expiration date
@@ -407,7 +412,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 				AuthorizeData: ar.AuthorizeData,
 				AccessData:    ar.AccessData,
 				RedirectUri:   redirectUri,
-				CreatedAt:     time.Now(),
+				CreatedAt:     s.Now(),
 				ExpiresIn:     ar.Expiration,
 				UserData:      ar.UserData,
 				Scope:         ar.Scope,

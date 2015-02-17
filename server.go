@@ -2,6 +2,7 @@ package osin
 
 import (
 	"net/http"
+	"time"
 )
 
 // Server is an OAuth2 implementation
@@ -10,6 +11,7 @@ type Server struct {
 	Storage           Storage
 	AuthorizeTokenGen AuthorizeTokenGen
 	AccessTokenGen    AccessTokenGen
+	Now               func() time.Time
 }
 
 // NewServer creates a new server instance
@@ -19,6 +21,7 @@ func NewServer(config *ServerConfig, storage Storage) *Server {
 		Storage:           storage,
 		AuthorizeTokenGen: &AuthorizeTokenGenDefault{},
 		AccessTokenGen:    &AccessTokenGenDefault{},
+		Now:               time.Now,
 	}
 }
 
