@@ -1,7 +1,6 @@
 package osin
 
 import (
-	"net/http"
 	"time"
 )
 
@@ -27,16 +26,7 @@ func NewServer(config *ServerConfig, storage Storage) *Server {
 
 // NewResponse creates a new response for the server
 func (s *Server) NewResponse() *Response {
-	r := &Response{
-		Type:            DATA,
-		StatusCode:      200,
-		ErrorStatusCode: 200,
-		Output:          make(ResponseData),
-		Headers:         make(http.Header),
-		IsError:         false,
-		Storage:         s.Storage.Clone(),
-	}
-	r.Headers.Add("Cache-Control", "no-store")
+	r := NewResponse(s.Storage)
 	r.ErrorStatusCode = s.Config.ErrorStatusCode
 	return r
 }
