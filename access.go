@@ -194,7 +194,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if ret.AuthorizeData.IsExpired() {
+	if ret.AuthorizeData.IsExpiredAt(s.Now()) {
 		w.SetError(E_INVALID_GRANT, "")
 		return nil
 	}

@@ -48,7 +48,7 @@ func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if ret.AccessData.IsExpired() {
+	if ret.AccessData.IsExpiredAt(s.Now()) {
 		w.SetError(E_INVALID_GRANT, "")
 		return nil
 	}
