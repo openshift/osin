@@ -16,6 +16,12 @@ type InfoRequest struct {
 func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	r.ParseForm()
 	bearer := CheckBearerAuth(r)
+	
+	//the token was not passed on the request
+	if bearer == nil {
+		w.SetError(E_INVALID_REQUEST, "")
+		return nil
+	}
 
 	// generate info request
 	ret := &InfoRequest{
