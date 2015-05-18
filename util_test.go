@@ -42,60 +42,6 @@ func TestBasicAuth(t *testing.T) {
 	}
 }
 
-func TestGetClientAuth(t *testing.T) {
-
-	urlWithSecret, _ := url.Parse("http://host.tld/path?client_id=xxx&client_secret=yyy")
-	urlWithEmptySecret, _ := url.Parse("http://host.tld/path?client_id=xxx&client_secret=")
-	urlNoSecret, _ := url.Parse("http://host.tld/path?client_id=xxx")
-
-	headerNoAuth := make(http.Header)
-	headerBadAuth := make(http.Header)
-	headerBadAuth.Set("Authorization", badAuthValue)
-	headerOKAuth := make(http.Header)
-	headerOKAuth.Set("Authorization", goodAuthValue)
-
-	var tests = []struct {
-		header           http.Header
-		url              *url.URL
-		allowQueryParams bool
-		expectAuth       bool
-	}{
-		{headerNoAuth, urlWithSecret, true, true},
-		{headerNoAuth, urlWithSecret, false, false},
-		{headerNoAuth, urlWithEmptySecret, true, true},
-		{headerNoAuth, urlWithEmptySecret, false, false},
-		{headerNoAuth, urlNoSecret, true, false},
-		{headerNoAuth, urlNoSecret, false, false},
-
-		{headerBadAuth, urlWithSecret, true, true},
-		{headerBadAuth, urlWithSecret, false, false},
-		{headerBadAuth, urlWithEmptySecret, true, true},
-		{headerBadAuth, urlWithEmptySecret, false, false},
-		{headerBadAuth, urlNoSecret, true, false},
-		{headerBadAuth, urlNoSecret, false, false},
-
-		{headerOKAuth, urlWithSecret, true, true},
-		{headerOKAuth, urlWithSecret, false, true},
-		{headerOKAuth, urlWithEmptySecret, true, true},
-		{headerOKAuth, urlWithEmptySecret, false, true},
-		{headerOKAuth, urlNoSecret, true, true},
-		{headerOKAuth, urlNoSecret, false, true},
-	}
-
-	for _, tt := range tests {
-		w := new(Response)
-		r := &http.Request{Header: tt.header, URL: tt.url}
-		r.ParseForm()
-		auth := getClientAuth(w, r, tt.allowQueryParams)
-		if tt.expectAuth && auth == nil {
-			t.Errorf("Auth should not be nil for %v", tt)
-		} else if !tt.expectAuth && auth != nil {
-			t.Errorf("Auth should be nil for %v", tt)
-		}
-	}
-
-}
-
 func TestBearerAuth(t *testing.T) {
 	r := &http.Request{Header: make(http.Header)}
 

@@ -125,7 +125,7 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 		w.InternalError = err
 		return nil
 	}
-
+    
 	grantType := AccessRequestType(r.Form.Get("grant_type"))
 	if s.Config.AllowedAccessTypes.Exists(grantType) {
 		switch grantType {
@@ -141,15 +141,16 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 			return s.handleAssertionRequest(w, r)
 		}
 	}
-
 	w.SetError(E_UNSUPPORTED_GRANT_TYPE, "")
 	return nil
 }
 
 func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *AccessRequest {
-	// get client authentication
-	auth := getClientAuth(w, r, s.Config.AllowClientSecretInParams)
-	if auth == nil {
+	
+	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, string(AUTHORIZATION_CODE))
+		
+	if !authenticationResult.CanProceed{
+		ApplyToResponse(w, authenticationResult)
 		return nil
 	}
 
@@ -169,10 +170,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		return nil
 	}
 
-	// must have a valid client
-	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
-		return nil
-	}
+	ret.Client = authenticationResult.Client
 
 	// must be a valid authorization code
 	var err error
@@ -228,12 +226,13 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 }
 
 func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *AccessRequest {
-	// get client authentication
-	auth := getClientAuth(w, r, s.Config.AllowClientSecretInParams)
-	if auth == nil {
+	
+	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, REFRESH_TOKEN)
+		
+	if !authenticationResult.CanProceed{
+		ApplyToResponse(w, authenticationResult)
 		return nil
 	}
-
 	// generate access token
 	ret := &AccessRequest{
 		Type:            REFRESH_TOKEN,
@@ -250,10 +249,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 		return nil
 	}
 
-	// must have a valid client
-	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
-		return nil
-	}
+	ret.Client = authenticationResult.Client
 
 	// must be a valid refresh code
 	var err error
@@ -296,8 +292,12 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 
 func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequest {
 	// get client authentication
-	auth := getClientAuth(w, r, s.Config.AllowClientSecretInParams)
-	if auth == nil {
+	println("in handlePasswordRequest")
+	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, PASSWORD)
+	
+	
+	if !authenticationResult.CanProceed{
+		ApplyToResponse(w, authenticationResult)
 		return nil
 	}
 
@@ -318,10 +318,7 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 		return nil
 	}
 
-	// must have a valid client
-	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
-		return nil
-	}
+	ret.Client = authenticationResult.Client
 
 	// set redirect uri
 	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
@@ -330,9 +327,11 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 }
 
 func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *AccessRequest {
-	// get client authentication
-	auth := getClientAuth(w, r, s.Config.AllowClientSecretInParams)
-	if auth == nil {
+	
+	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, CLIENT_CREDENTIALS)
+		
+	if !authenticationResult.CanProceed{
+		ApplyToResponse(w, authenticationResult)
 		return nil
 	}
 
@@ -345,10 +344,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 		HttpRequest:     r,
 	}
 
-	// must have a valid client
-	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
-		return nil
-	}
+	ret.Client = authenticationResult.Client
 
 	// set redirect uri
 	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
@@ -357,9 +353,11 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 }
 
 func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessRequest {
-	// get client authentication
-	auth := getClientAuth(w, r, s.Config.AllowClientSecretInParams)
-	if auth == nil {
+	
+	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, CLIENT_CREDENTIALS)
+		
+	if !authenticationResult.CanProceed{
+		ApplyToResponse(w, authenticationResult)
 		return nil
 	}
 
@@ -380,10 +378,7 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 		return nil
 	}
 
-	// must have a valid client
-	if ret.Client = getClient(auth, w.Storage, w); ret.Client == nil {
-		return nil
-	}
+	ret.Client = authenticationResult.Client
 
 	// set redirect uri
 	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
@@ -462,6 +457,13 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 	} else {
 		w.SetError(E_ACCESS_DENIED, "")
 	}
+}
+
+
+func ApplyToResponse(w *Response, result *ClientAuthenticationResult) {
+	w.SetError(result.Error, "")
+	w.InternalError = result.InternalError
+	
 }
 
 // Helper Functions

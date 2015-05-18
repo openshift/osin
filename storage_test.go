@@ -25,6 +25,14 @@ func NewTestingStorage() *TestingStorage {
 		Id:          "1234",
 		Secret:      "aabbccdd",
 		RedirectUri: "http://localhost:14000/appauth",
+		Type: CONFIDENTIAL_CLIENT,
+	}
+	
+	r.clients["4567"] = &DefaultClient{
+		Id:          "4567",
+		Secret:      "",
+		RedirectUri: "http://localhost:14000/appauth",
+		Type: PUBLIC_CLIENT,
 	}
 
 	r.authorize["9999"] = &AuthorizeData{
@@ -69,7 +77,7 @@ func (s *TestingStorage) GetClient(id string) (Client, error) {
 	if c, ok := s.clients[id]; ok {
 		return c, nil
 	}
-	return nil, errors.New("Client not found")
+	return nil,nil
 }
 
 func (s *TestingStorage) SetClient(id string, client Client) error {

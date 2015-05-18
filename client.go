@@ -1,5 +1,12 @@
 package osin
 
+type ClientType string
+
+const (
+	PUBLIC_CLIENT 		ClientType 	= "public"
+	CONFIDENTIAL_CLIENT  			= "confidential"
+)
+
 // Client information
 type Client interface {
 	// Client id
@@ -7,6 +14,9 @@ type Client interface {
 
 	// Client secret
 	GetSecret() string
+	
+	// Client type
+	GetType() ClientType
 
 	// Base client uri
 	GetRedirectUri() string
@@ -19,6 +29,7 @@ type Client interface {
 type DefaultClient struct {
 	Id          string
 	Secret      string
+	Type        ClientType
 	RedirectUri string
 	UserData    interface{}
 }
@@ -29,6 +40,10 @@ func (d *DefaultClient) GetId() string {
 
 func (d *DefaultClient) GetSecret() string {
 	return d.Secret
+}
+
+func (d *DefaultClient) GetType() ClientType {
+	return d.Type
 }
 
 func (d *DefaultClient) GetRedirectUri() string {
