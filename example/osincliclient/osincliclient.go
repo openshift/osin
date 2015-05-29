@@ -24,7 +24,7 @@ func main() {
 		Id:          "1234",
 		Secret:      "aabbccdd",
 		RedirectUri: "http://localhost:14001/appauth",
-		Type: CONFIDENTIAL_CLIENT,
+		AuthMethod: CLIENT_SECRET_BASIC,
 	})
 	server := osin.NewServer(config, sstorage)
 

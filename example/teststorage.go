@@ -25,14 +25,14 @@ func NewTestStorage() *TestStorage {
 		Id:          "1234",
 		Secret:      "aabbccdd",
 		RedirectUri: "http://localhost:14000/appauth",
-		Type: CONFIDENTIAL_CLIENT,
+		AuthMethod: CLIENT_SECRET_BASIC,
 	}
 	
 	r.clients["4567"] = &DefaultClient{
 		Id:          "4567",
 		Secret:      "",
 		RedirectUri: "http://localhost:14000/appauth",
-		Type: PUBLIC_CLIENT,
+		AuthMethod: NONE,
 	}
 
 	return r

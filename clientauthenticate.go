@@ -29,18 +29,21 @@ func authenticateClient(s Storage, r *http.Request, allowSecretInParams bool, gr
 	
 	clientId := ""
 	clientSecret := ""
-	
+	var basicAuthIsComplete bool
+	var formParmsIsComplete bool
 	if basicAuth != nil {
 		clientId 		= basicAuth.Username
 		clientSecret 	= basicAuth.Password
+		basicAuthIsComplete = (basicAuth.Username != "" && basicAuth.Password != "")
 	} else {
 	    if paramsClientId != nil { clientId = *paramsClientId}
 		if paramsClientSecret != nil { clientSecret = *paramsClientSecret}
+		formParmsIsComplete = (clientId != "" && clientSecret != "")
 	}
 	
 	if clientId == "" { 
 		return invalidRequest(errors.New("Client authentication not sent"))
-		}
+	}
 	clientSecretSupplied := clientSecret != ""
 	
 	client, err := s.GetClient(clientId)
@@ -52,6 +55,11 @@ func authenticateClient(s Storage, r *http.Request, allowSecretInParams bool, gr
 		return unauthorizedClient(nil)
 	}
 	
+	if (client.GetAuthMethod() == CLIENT_SECRET_BASIC && !basicAuthIsComplete) ||
+	   (client.GetAuthMethod() == CLIENT_SECRET_POST  && !formParmsIsComplete) {
+		return invalidRequest(errors.New("Client authentication not sent"))
+	}
+	
 	if client.GetRedirectUri() == "" {
 		return unauthorizedClient(nil)
 	}
@@ -59,7 +67,7 @@ func authenticateClient(s Storage, r *http.Request, allowSecretInParams bool, gr
 	grantTypeRequiresSecret := grantTypeRequiresSecret(grantType)
 	
 	mustAuthenticateWithSecret := grantTypeRequiresSecret ||
-								  (!grantTypeRequiresSecret && client.GetType() == CONFIDENTIAL_CLIENT) ||
+								  (!grantTypeRequiresSecret && client.GetAuthMethod() != NONE) ||
 								  (!grantTypeRequiresSecret && client.GetSecret() != "") ||
 								  (!grantTypeRequiresSecret && clientSecretSupplied)
 								
