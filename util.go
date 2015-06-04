@@ -16,29 +16,30 @@ type BasicAuth struct {
 // Parse bearer authentication header
 type BearerAuth struct {
 	Code string
+	AuthorizationHeaderFound bool
 }
 
 // Return authorization header data
-func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
+func CheckBasicAuth(r *http.Request) (*BasicAuth, bool, error) {
 	if r.Header.Get("Authorization") == "" {
-		return nil, nil
+		return nil, false, nil
 	}
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 || s[0] != "Basic" {
-		return nil, errors.New("Invalid authorization header")
+		return nil, true, errors.New("Invalid authorization header")
 	}
 
 	b, err := base64.StdEncoding.DecodeString(s[1])
 	if err != nil {
-		return nil, err
+		return nil, true, err
 	}
 	pair := strings.SplitN(string(b), ":", 2)
 	if len(pair) != 2 {
-		return nil, errors.New("Invalid authorization message")
+		return nil, true, errors.New("Invalid authorization message")
 	}
 
-	return &BasicAuth{Username: pair[0], Password: pair[1]}, nil
+	return &BasicAuth{Username: pair[0], Password: pair[1]}, true, nil
 }
 
 // Return "Bearer" token from request. The header has precedence over query string.

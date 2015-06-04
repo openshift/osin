@@ -30,8 +30,8 @@ func (t AllowedAccessType) Exists(rt AccessRequestType) bool {
 type ServerConfig struct {
 	// Authorization token expiration in seconds (default 5 minutes)
 	AuthorizationExpiration int32
-
-	// Access token expiration in seconds (default 1 hour)
+	
+		// Access token expiration in seconds (default 1 hour)
 	AccessExpiration int32
 
 	// Token type to return
@@ -57,6 +57,9 @@ type ServerConfig struct {
 	// Separator to support multiple URIs in Client.GetRedirectUri().
 	// If blank (the default), don't allow multiple URIs.
 	RedirectUriSeparator string
+	
+	// A realm which is issued with the authentication scheme challenge
+	BasicAuthRealm string
 }
 
 // NewServerConfig returns a new ServerConfig with default configuration
@@ -70,5 +73,6 @@ func NewServerConfig() *ServerConfig {
 		ErrorStatusCode:           200,
 		AllowClientSecretInParams: false,
 		AllowGetAccessRequest:     false,
+		BasicAuthRealm :           "",
 	}
 }

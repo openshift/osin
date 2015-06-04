@@ -16,28 +16,28 @@ func TestBasicAuth(t *testing.T) {
 	r := &http.Request{Header: make(http.Header)}
 
 	// Without any header
-	if b, err := CheckBasicAuth(r); b != nil || err != nil {
+	if b, authHeaderFound, err := CheckBasicAuth(r); b != nil || authHeaderFound || err != nil {
 		t.Errorf("Validated basic auth without header")
 	}
 
 	// with invalid header
 	r.Header.Set("Authorization", badAuthValue)
-	b, err := CheckBasicAuth(r)
-	if b != nil || err == nil {
+	b, authHeaderFound, err := CheckBasicAuth(r)
+	if b != nil || authHeaderFound == false || err == nil {
 		t.Errorf("Validated invalid auth")
 		return
 	}
-
+	
 	// with valid header
 	r.Header.Set("Authorization", goodAuthValue)
-	b, err = CheckBasicAuth(r)
-	if b == nil || err != nil {
+	b, authHeaderFound, err = CheckBasicAuth(r)
+	if b == nil || authHeaderFound == false || err != nil {
 		t.Errorf("Could not extract basic auth")
 		return
 	}
 
 	// check extracted auth data
-	if b.Username != "test" || b.Password != "test" {
+	if b.Username != "test" || authHeaderFound == false || b.Password != "test" {
 		t.Errorf("Error decoding basic auth")
 	}
 }

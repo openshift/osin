@@ -148,10 +148,10 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 
 func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *AccessRequest {
 	
-	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, string(AUTHORIZATION_CODE))
+	authenticationResult := authenticateClient(w.Storage, r, string(AUTHORIZATION_CODE))
 		
 	if !authenticationResult.CanProceed{
-		ApplyToResponse(w, authenticationResult)
+		ApplyToResponse(w, authenticationResult, s.Config.BasicAuthRealm)
 		return nil
 	}
 
@@ -252,10 +252,10 @@ func extraScopes(access_scopes, refresh_scopes string) bool {
 
 func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *AccessRequest {
 	
-	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, REFRESH_TOKEN)
+	authenticationResult := authenticateClient(w.Storage, r, REFRESH_TOKEN)
 		
 	if !authenticationResult.CanProceed{
-		ApplyToResponse(w, authenticationResult)
+		ApplyToResponse(w, authenticationResult, s.Config.BasicAuthRealm)
 		return nil
 	}
 	// generate access token
@@ -323,12 +323,11 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 
 func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequest {
 	// get client authentication
-	println("in handlePasswordRequest")
-	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, PASSWORD)
+	authenticationResult := authenticateClient(w.Storage, r, PASSWORD)
 	
 	
 	if !authenticationResult.CanProceed{
-		ApplyToResponse(w, authenticationResult)
+		ApplyToResponse(w, authenticationResult, s.Config.BasicAuthRealm)
 		return nil
 	}
 
@@ -359,10 +358,10 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 
 func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *AccessRequest {
 	
-	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, CLIENT_CREDENTIALS)
+	authenticationResult := authenticateClient(w.Storage, r, CLIENT_CREDENTIALS)
 		
 	if !authenticationResult.CanProceed{
-		ApplyToResponse(w, authenticationResult)
+		ApplyToResponse(w, authenticationResult, s.Config.BasicAuthRealm)
 		return nil
 	}
 
@@ -385,10 +384,10 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 
 func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessRequest {
 	
-	authenticationResult := authenticateClient(w.Storage, r, s.Config.AllowClientSecretInParams, CLIENT_CREDENTIALS)
+	authenticationResult := authenticateClient(w.Storage, r, CLIENT_CREDENTIALS)
 		
 	if !authenticationResult.CanProceed{
-		ApplyToResponse(w, authenticationResult)
+		ApplyToResponse(w, authenticationResult, s.Config.BasicAuthRealm)
 		return nil
 	}
 
@@ -491,9 +490,18 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 }
 
 
-func ApplyToResponse(w *Response, result *ClientAuthenticationResult) {
+func ApplyToResponse(w *Response, result *ClientAuthenticationResult, realm string) {
 	w.SetError(result.Error, "")
 	w.InternalError = result.InternalError
+	
+	if result.MustReturn401 {
+		w.StatusCode = http.StatusUnauthorized
+		w.Headers.Add("WWW-Authenticate", "Basic ream=" + realm)
+	} else {
+		w.StatusCode = http.StatusBadRequest
+	}
+	
+
 	
 }
 
