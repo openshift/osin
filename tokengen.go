@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"strings"
 
-	"github.com/satori/go.uuid"
+	"github.com/pborman/uuid"
 )
 
 // AuthorizeTokenGenDefault is the default authorization token generator
@@ -17,8 +17,8 @@ func removePadding(token string) string {
 
 // GenerateAuthorizeToken generates a base64-encoded UUID code
 func (a *AuthorizeTokenGenDefault) GenerateAuthorizeToken(data *AuthorizeData) (ret string, err error) {
-	token := uuid.NewV4()
-	return removePadding(base64.URLEncoding.EncodeToString(token.Bytes())), nil
+	token := uuid.NewRandom()
+	return removePadding(base64.URLEncoding.EncodeToString([]byte(token))), nil
 }
 
 // AccessTokenGenDefault is the default authorization token generator
@@ -27,12 +27,12 @@ type AccessTokenGenDefault struct {
 
 // GenerateAccessToken generates base64-encoded UUID access and refresh tokens
 func (a *AccessTokenGenDefault) GenerateAccessToken(data *AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error) {
-	token := uuid.NewV4()
-	accesstoken = removePadding(base64.URLEncoding.EncodeToString(token.Bytes()))
+	token := uuid.NewRandom()
+	return removePadding(base64.URLEncoding.EncodeToString([]byte(token))), nil
 
 	if generaterefresh {
-		rtoken := uuid.NewV4()
-		refreshtoken = removePadding(base64.URLEncoding.EncodeToString(rtoken.Bytes()))
+		rtoken := uuid.NewRandom()
+		refreshtoken = removePadding(base64.URLEncoding.EncodeToString([]byte(rtoken)))
 	}
 	return
 }
