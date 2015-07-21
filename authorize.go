@@ -91,7 +91,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	// create the authorization request
 	unescapedUri, err := url.QueryUnescape(r.Form.Get("redirect_uri"))
 	if err != nil {
-		w.SetErrorState(E_INVALID_REQUEST, "", "")
+		w.SetErrorState(E_INVALID_REQUEST, "handleAuthReq invalidReq 1", "")
 		w.InternalError = err
 		return nil
 	}
@@ -107,16 +107,16 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	// must have a valid client
 	ret.Client, err = w.Storage.GetClient(r.Form.Get("client_id"))
 	if err != nil {
-		w.SetErrorState(E_SERVER_ERROR, "", ret.State)
+		w.SetErrorState(E_SERVER_ERROR, "handleAuthReq server_error 1", ret.State)
 		w.InternalError = err
 		return nil
 	}
 	if ret.Client == nil {
-		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
+		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "handleAuthReq unauthClient 1", ret.State)
 		return nil
 	}
 	if ret.Client.GetRedirectUri() == "" {
-		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
+		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "handleAuthReq unauthClient 2", ret.State)
 		return nil
 	}
 
@@ -127,7 +127,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	}
 
 	if err = ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
-		w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
+		w.SetErrorState(E_INVALID_REQUEST, "handleAuthReq invalidReq 2", ret.State)
 		w.InternalError = err
 		return nil
 	}
@@ -147,7 +147,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 		return ret
 	}
 
-	w.SetErrorState(E_UNSUPPORTED_RESPONSE_TYPE, "", ret.State)
+	w.SetErrorState(E_UNSUPPORTED_RESPONSE_TYPE, "handleAuthReq unsupportedResponseType 1", ret.State)
 	return nil
 }
 
@@ -161,9 +161,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 	w.SetRedirect(ar.RedirectUri)
 
 	if ar.Authorized {
-		if ar.Type == TOKEN {
-			w.SetRedirectFragment(true)
-
+		if ar.Type == TOKEN { w.SetRedirectFragment(true) }
 			// generate token directly
 			ret := &AccessRequest{
 				Type:            IMPLICIT,
@@ -181,40 +179,9 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			if ar.State != "" && w.InternalError == nil {
 				w.Output["state"] = ar.State
 			}
-		} else {
-			// generate authorization token
-			ret := &AuthorizeData{
-				Client:      ar.Client,
-				CreatedAt:   s.Now(),
-				ExpiresIn:   ar.Expiration,
-				RedirectUri: ar.RedirectUri,
-				State:       ar.State,
-				Scope:       ar.Scope,
-				UserData:    ar.UserData,
-			}
-
-			// generate token code
-			code, err := s.AuthorizeTokenGen.GenerateAuthorizeToken(ret)
-			if err != nil {
-				w.SetErrorState(E_SERVER_ERROR, "", ar.State)
-				w.InternalError = err
-				return
-			}
-			ret.Code = code
-
-			// save authorization token
-			if err = w.Storage.SaveAuthorize(ret); err != nil {
-				w.SetErrorState(E_SERVER_ERROR, "", ar.State)
-				w.InternalError = err
-				return
-			}
-
-			// redirect with code
-			w.Output["code"] = ret.Code
-			w.Output["state"] = ret.State
-		}
 	} else {
 		// redirect with error
-		w.SetErrorState(E_ACCESS_DENIED, "", ar.State)
+		w.SetErrorState(E_ACCESS_DENIED, "finishAuthReq accessDenied 1", ar.State)
 	}
 }
+
