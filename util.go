@@ -90,3 +90,4 @@ func getClientAuth(w *Response, r *http.Request, allowQueryParams bool) *BasicAu
 	}
 	return auth
 }
+

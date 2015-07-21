@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"fmt"
 )
 
 // AccessRequestType is the type for OAuth param `grant_type`
@@ -111,7 +112,7 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 	if r.Method == "GET" {
 		if !s.Config.AllowGetAccessRequest {
 			w.SetError(E_INVALID_REQUEST, "")
-			w.InternalError = errors.New("Request must be POST")
+			w.InternalError = errors.New("")
 			return nil
 		}
 	} else if r.Method != "POST" {
@@ -179,22 +180,26 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	var err error
 	ret.AuthorizeData, err = w.Storage.LoadAuthorize(ret.Code)
 	if err != nil {
-		w.SetError(E_INVALID_GRANT, "")
+		w.SetError(E_INVALID_GRANT, fmt.Sprintf("handleAuthCodeReq invalid grant 2 code: %s\nredirect: %s\n internal error: %s", ret.Code, ret.RedirectUri, err.Error()))
 		w.InternalError = err
 		return nil
 	}
+
 	if ret.AuthorizeData == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
+
 	if ret.AuthorizeData.Client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
+
 	if ret.AuthorizeData.Client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
+
 	if ret.AuthorizeData.IsExpiredAt(s.Now()) {
 		w.SetError(E_INVALID_GRANT, "")
 		return nil
@@ -210,11 +215,13 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	if ret.RedirectUri == "" {
 		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
 	}
+
 	if err = ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
 		return nil
 	}
+
 	if ret.AuthorizeData.RedirectUri != ret.RedirectUri {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = errors.New("Redirect uri is different")
@@ -472,14 +479,6 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 			w.Storage.RemoveAuthorize(ret.AuthorizeData.Code)
 		}
 
-		// remove previous access token
-		if ret.AccessData != nil {
-			if ret.AccessData.RefreshToken != "" {
-				w.Storage.RemoveRefresh(ret.AccessData.RefreshToken)
-			}
-			w.Storage.RemoveAccess(ret.AccessData.AccessToken)
-		}
-
 		// output data
 		w.Output["access_token"] = ret.AccessToken
 		w.Output["token_type"] = s.Config.TokenType
@@ -520,3 +519,4 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 	}
 	return client
 }
+
