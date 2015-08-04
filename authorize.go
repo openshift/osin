@@ -11,7 +11,7 @@ type AuthorizeRequestType string
 
 const (
 	CODE  AuthorizeRequestType = "code"
-	TOKEN                      = "token"
+	TOKEN AuthorizeRequestType = "token"
 )
 
 // Authorize request information

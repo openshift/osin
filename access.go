@@ -12,11 +12,11 @@ type AccessRequestType string
 
 const (
 	AUTHORIZATION_CODE AccessRequestType = "authorization_code"
-	REFRESH_TOKEN                        = "refresh_token"
-	PASSWORD                             = "password"
-	CLIENT_CREDENTIALS                   = "client_credentials"
-	ASSERTION                            = "assertion"
-	IMPLICIT                             = "__implicit"
+	REFRESH_TOKEN      AccessRequestType = "refresh_token"
+	PASSWORD           AccessRequestType = "password"
+	CLIENT_CREDENTIALS AccessRequestType = "client_credentials"
+	ASSERTION          AccessRequestType = "assertion"
+	IMPLICIT           AccessRequestType = "__implicit"
 )
 
 // AccessRequest is a request for access tokens
