@@ -54,7 +54,7 @@ http.ListenAndServe(":14000", nil)
 Open in your web browser:
 
 ````
-http://localhost:14000/authorize?response_type=code&client_id=1234&redirect_url=http%3A%2F%2Flocalhost%3A14000%2Fappauth%2Fcode
+http://localhost:14000/authorize?response_type=code&client_id=1234&redirect_uri=http%3A%2F%2Flocalhost%3A14000%2Fappauth%2Fcode
 ````
 
 ### License
