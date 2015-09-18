@@ -14,36 +14,36 @@ type Storage interface {
 	Close()
 
 	// GetClient loads the client by id (client_id)
-	GetClient(id string) (Client, error)
+	GetClient(context interface{}, id string) (Client, error)
 
 	// SaveAuthorize saves authorize data.
-	SaveAuthorize(*AuthorizeData) error
+	SaveAuthorize(interface{}, *AuthorizeData) error
 
 	// LoadAuthorize looks up AuthorizeData by a code.
 	// Client information MUST be loaded together.
 	// Optionally can return error if expired.
-	LoadAuthorize(code string) (*AuthorizeData, error)
+	LoadAuthorize(context interface{}, code string) (*AuthorizeData, error)
 
 	// RemoveAuthorize revokes or deletes the authorization code.
-	RemoveAuthorize(code string) error
+	RemoveAuthorize(context interface{}, code string) error
 
 	// SaveAccess writes AccessData.
 	// If RefreshToken is not blank, it must save in a way that can be loaded using LoadRefresh.
-	SaveAccess(*AccessData) error
+	SaveAccess(interface{}, *AccessData) error
 
 	// LoadAccess retrieves access data by token. Client information MUST be loaded together.
 	// AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 	// Optionally can return error if expired.
-	LoadAccess(token string) (*AccessData, error)
+	LoadAccess(context interface{}, token string) (*AccessData, error)
 
 	// RemoveAccess revokes or deletes an AccessData.
-	RemoveAccess(token string) error
+	RemoveAccess(context interface{}, token string) error
 
 	// LoadRefresh retrieves refresh AccessData. Client information MUST be loaded together.
 	// AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 	// Optionally can return error if expired.
-	LoadRefresh(token string) (*AccessData, error)
+	LoadRefresh(context interface{}, token string) (*AccessData, error)
 
 	// RemoveRefresh revokes or deletes refresh AccessData.
-	RemoveRefresh(token string) error
+	RemoveRefresh(context interface{}, token string) error
 }

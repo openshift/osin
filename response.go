@@ -20,6 +20,7 @@ const (
 
 // Server response
 type Response struct {
+	Context            interface{}
 	Type               ResponseType
 	StatusCode         int
 	StatusText         string

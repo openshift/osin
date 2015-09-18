@@ -177,7 +177,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 
 	// must be a valid authorization code
 	var err error
-	ret.AuthorizeData, err = w.Storage.LoadAuthorize(ret.Code)
+	ret.AuthorizeData, err = w.Storage.LoadAuthorize(w.Context, ret.Code)
 	if err != nil {
 		w.SetError(E_INVALID_GRANT, "")
 		w.InternalError = err
@@ -282,7 +282,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 
 	// must be a valid refresh code
 	var err error
-	ret.AccessData, err = w.Storage.LoadRefresh(ret.Code)
+	ret.AccessData, err = w.Storage.LoadRefresh(w.Context, ret.Code)
 	if err != nil {
 		w.SetError(E_INVALID_GRANT, "")
 		w.InternalError = err
@@ -461,7 +461,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		}
 
 		// save access token
-		if err = w.Storage.SaveAccess(ret); err != nil {
+		if err = w.Storage.SaveAccess(w.Context, ret); err != nil {
 			w.SetError(E_SERVER_ERROR, "")
 			w.InternalError = err
 			return
@@ -469,15 +469,15 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 
 		// remove authorization token
 		if ret.AuthorizeData != nil {
-			w.Storage.RemoveAuthorize(ret.AuthorizeData.Code)
+			w.Storage.RemoveAuthorize(w.Context, ret.AuthorizeData.Code)
 		}
 
 		// remove previous access token
 		if ret.AccessData != nil {
 			if ret.AccessData.RefreshToken != "" {
-				w.Storage.RemoveRefresh(ret.AccessData.RefreshToken)
+				w.Storage.RemoveRefresh(w.Context, ret.AccessData.RefreshToken)
 			}
-			w.Storage.RemoveAccess(ret.AccessData.AccessToken)
+			w.Storage.RemoveAccess(w.Context, ret.AccessData.AccessToken)
 		}
 
 		// output data
@@ -500,7 +500,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 // getClient looks up and authenticates the basic auth using the given
 // storage. Sets an error on the response if auth fails or a server error occurs.
 func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
-	client, err := storage.GetClient(auth.Username)
+	client, err := storage.GetClient(w.Context, auth.Username)
 	if err != nil {
 		w.SetError(E_SERVER_ERROR, "")
 		w.InternalError = err
