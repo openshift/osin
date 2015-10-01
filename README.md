@@ -1,6 +1,9 @@
 OSIN
 ====
 
+[![GoDoc](https://godoc.org/github.com/RangelReale/osin?status.svg)](https://godoc.org/github.com/RangelReale/osin)
+
+
 Golang OAuth2 server library
 ----------------------------
 
