@@ -17,7 +17,11 @@ The library implements the majority of the specification, like authorization and
 ### Example Server
 
 ````go
-import "github.com/RangelReale/osin"
+import (
+	"github.com/RangelReale/osin"
+	"github.com/RangelReale/osin/example" 
+)
+
 
 // TestStorage implements the "osin.Storage" interface
 server := osin.NewServer(osin.NewServerConfig(), &example.TestStorage{})
