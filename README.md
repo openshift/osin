@@ -20,7 +20,7 @@ The library implements the majority of the specification, like authorization and
 import "github.com/RangelReale/osin"
 
 // TestStorage implements the "osin.Storage" interface
-server := osin.NewServer(osin.NewServerConfig(), &TestStorage{})
+server := osin.NewServer(osin.NewServerConfig(), &example.TestStorage{})
 
 // Authorization code endpoint
 http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
