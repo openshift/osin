@@ -100,19 +100,16 @@ func EqualAuthorizeRequestType(t1, t2 AuthorizeRequestType) bool {
 
 func GetKnownAuthorizeRequestType(rt AuthorizeRequestType) AuthorizeRequestType {
 	rts := strings.Split(string(rt), " ")
-	hasCode := false
 	hasToken := false
 	for _, v := range rts {
 		switch AuthorizeRequestType(v) {
-		case CODE:
-			hasCode = true
+		case CODE: // if both of CODE and TOKEN exist, considered as code flow
+			return CODE
 		case TOKEN:
 			hasToken = true
 		}
 	}
-	if hasCode { // if both have, consider as code flow
-		return CODE
-	} else if hasToken {
+	if hasToken {
 		return TOKEN
 	} else {
 		return ""
