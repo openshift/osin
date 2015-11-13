@@ -136,7 +136,8 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 
 	requestType := AuthorizeRequestType(r.Form.Get("response_type"))
 	if s.Config.AllowedAuthorizeTypes.Exists(requestType) {
-		switch requestType {
+		knownRequestType := GetKnownAuthorizeRequestType(requestType)
+		switch knownRequestType {
 		case CODE:
 			ret.Type = CODE
 			ret.Expiration = s.Config.AuthorizationExpiration

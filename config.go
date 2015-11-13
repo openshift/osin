@@ -6,7 +6,7 @@ type AllowedAuthorizeType []AuthorizeRequestType
 // Exists returns true if the auth type exists in the list
 func (t AllowedAuthorizeType) Exists(rt AuthorizeRequestType) bool {
 	for _, k := range t {
-		if k == rt {
+		if EqualAuthorizeRequestType(k, rt) {
 			return true
 		}
 	}
