@@ -2,7 +2,6 @@ package osin
 
 import (
 	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -89,12 +88,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	r.ParseForm()
 
 	// create the authorization request
-	unescapedUri, err := url.QueryUnescape(r.Form.Get("redirect_uri"))
-	if err != nil {
-		w.SetErrorState(E_INVALID_REQUEST, "", "")
-		w.InternalError = err
-		return nil
-	}
+	unescapedUri := r.Form.Get("redirect_uri")
 
 	ret := &AuthorizeRequest{
 		State:       r.Form.Get("state"),
@@ -104,6 +98,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 		HttpRequest: r,
 	}
 
+	var err error
 	// must have a valid client
 	ret.Client, err = w.Storage.GetClient(r.Form.Get("client_id"))
 	if err != nil {
