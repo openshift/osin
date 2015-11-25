@@ -1,15 +1,16 @@
 package main
 
-// Use code.google.com/p/goauth2/oauth client to test
+// Use golang.org/x/oauth2 client to test
 // Open url in browser:
 // http://localhost:14000/app
 
 import (
-	"code.google.com/p/goauth2/oauth"
 	"fmt"
+	"net/http"
+
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
-	"net/http"
+	"golang.org/x/oauth2"
 )
 
 func main() {
@@ -19,14 +20,15 @@ func main() {
 
 	server := osin.NewServer(config, example.NewTestStorage())
 
-	client := &oauth.Config{
-		ClientId:     "1234",
+	client := &oauth2.Config{
+		ClientID:     "1234",
 		ClientSecret: "aabbccdd",
-		RedirectURL:  "http://localhost:14000/appauth/code",
-		AuthURL:      "http://localhost:14000/authorize",
-		TokenURL:     "http://localhost:14000/token",
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  "http://localhost:14000/authorize",
+			TokenURL: "http://localhost:14000/token",
+		},
+		RedirectURL: "http://localhost:14000/appauth/code",
 	}
-	ctransport := &oauth.Transport{Config: client}
 
 	// Authorization code endpoint
 	http.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
@@ -95,12 +97,12 @@ func main() {
 			return
 		}
 
-		var jr *oauth.Token
+		var jr *oauth2.Token
 		var err error
 
 		// if parse, download and parse json
 		if r.Form.Get("doparse") == "1" {
-			jr, err = ctransport.Exchange(code)
+			jr, err = client.Exchange(oauth2.NoContext, code)
 			if err != nil {
 				jr = nil
 				w.Write([]byte(fmt.Sprintf("ERROR: %s<br/>\n", err)))
