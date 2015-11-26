@@ -14,6 +14,10 @@ type TestingStorage struct {
 }
 
 func NewTestingStorage() *TestingStorage {
+	return NewTestingStorageWithRedirectURI("http://localhost:14000/appauth")
+}
+
+func NewTestingStorageWithRedirectURI(redirectURI string) *TestingStorage {
 	r := &TestingStorage{
 		clients:   make(map[string]Client),
 		authorize: make(map[string]*AuthorizeData),
@@ -24,7 +28,7 @@ func NewTestingStorage() *TestingStorage {
 	r.clients["1234"] = &DefaultClient{
 		Id:          "1234",
 		Secret:      "aabbccdd",
-		RedirectUri: "http://localhost:14000/appauth",
+		RedirectUri: redirectURI,
 	}
 
 	r.authorize["9999"] = &AuthorizeData{
@@ -32,7 +36,7 @@ func NewTestingStorage() *TestingStorage {
 		Code:        "9999",
 		ExpiresIn:   3600,
 		CreatedAt:   time.Now(),
-		RedirectUri: "http://localhost:14000/appauth",
+		RedirectUri: redirectURI,
 	}
 
 	r.access["9999"] = &AccessData{
