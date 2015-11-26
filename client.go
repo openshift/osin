@@ -6,7 +6,7 @@ type Client interface {
 	GetId() string
 
 	// Client secret
-	GetSecret() string
+	GetSecret() Secret
 
 	// Base client uri
 	GetRedirectUri() string
@@ -18,7 +18,7 @@ type Client interface {
 // DefaultClient stores all data in struct variables
 type DefaultClient struct {
 	Id          string
-	Secret      string
+	Secret      Secret
 	RedirectUri string
 	UserData    interface{}
 }
@@ -27,7 +27,7 @@ func (d *DefaultClient) GetId() string {
 	return d.Id
 }
 
-func (d *DefaultClient) GetSecret() string {
+func (d *DefaultClient) GetSecret() Secret {
 	return d.Secret
 }
 
@@ -44,4 +44,17 @@ func (d *DefaultClient) CopyFrom(client Client) {
 	d.Secret = client.GetSecret()
 	d.RedirectUri = client.GetRedirectUri()
 	d.UserData = client.GetUserData()
+}
+
+// Secret encapsulates information about a client secret.
+type Secret interface {
+	// Validate returns true if the given string matches the client secret.
+	Validate(string) bool
+}
+
+// DefaultSecret stores a client secret in cleartext.
+type DefaultSecret string
+
+func (d DefaultSecret) Validate(secret string) bool {
+	return secret == string(d)
 }
