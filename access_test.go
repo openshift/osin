@@ -216,3 +216,100 @@ func TestExtraScopes(t *testing.T) {
 	}
 
 }
+
+// clientWithoutMatcher just implements the base Client interface
+type clientWithoutMatcher struct {
+	Id          string
+	Secret      string
+	RedirectUri string
+}
+
+func (c *clientWithoutMatcher) GetId() string            { return c.Id }
+func (c *clientWithoutMatcher) GetSecret() string        { return c.Secret }
+func (c *clientWithoutMatcher) GetRedirectUri() string   { return c.RedirectUri }
+func (c *clientWithoutMatcher) GetUserData() interface{} { return nil }
+
+func TestGetClientWithoutMatcher(t *testing.T) {
+	myclient := &clientWithoutMatcher{
+		Id:          "myclient",
+		Secret:      "myclientsecret",
+		RedirectUri: "http://www.example.com",
+	}
+	storage := &TestingStorage{clients: map[string]Client{myclient.Id: myclient}}
+
+	// Ensure bad secret fails
+	{
+		auth := &BasicAuth{
+			Username: "myclient",
+			Password: "invalidsecret",
+		}
+		w := &Response{}
+		client := getClient(auth, storage, w)
+		if client != nil {
+			t.Errorf("Expected error, got client: %v", client)
+		}
+	}
+
+	// Ensure good secret works
+	{
+		auth := &BasicAuth{
+			Username: "myclient",
+			Password: "myclientsecret",
+		}
+		w := &Response{}
+		client := getClient(auth, storage, w)
+		if client != myclient {
+			t.Errorf("Expected client, got nil with response: %v", w)
+		}
+	}
+}
+
+// clientWithMatcher implements the base Client interface and the ClientSecretMatcher interface
+type clientWithMatcher struct {
+	Id          string
+	Secret      string
+	RedirectUri string
+}
+
+func (c *clientWithMatcher) GetId() string            { return c.Id }
+func (c *clientWithMatcher) GetSecret() string        { panic("called GetSecret"); return "" }
+func (c *clientWithMatcher) GetRedirectUri() string   { return c.RedirectUri }
+func (c *clientWithMatcher) GetUserData() interface{} { return nil }
+func (c *clientWithMatcher) ClientSecretMatches(secret string) bool {
+	return secret == c.Secret
+}
+
+func TestGetClientSecretMatcher(t *testing.T) {
+	myclient := &clientWithMatcher{
+		Id:          "myclient",
+		Secret:      "myclientsecret",
+		RedirectUri: "http://www.example.com",
+	}
+	storage := &TestingStorage{clients: map[string]Client{myclient.Id: myclient}}
+
+	// Ensure bad secret fails, but does not panic (doesn't call GetSecret)
+	{
+		auth := &BasicAuth{
+			Username: "myclient",
+			Password: "invalidsecret",
+		}
+		w := &Response{}
+		client := getClient(auth, storage, w)
+		if client != nil {
+			t.Errorf("Expected error, got client: %v", client)
+		}
+	}
+
+	// Ensure good secret works, but does not panic (doesn't call GetSecret)
+	{
+		auth := &BasicAuth{
+			Username: "myclient",
+			Password: "myclientsecret",
+		}
+		w := &Response{}
+		client := getClient(auth, storage, w)
+		if client != myclient {
+			t.Errorf("Expected client, got nil with response: %v", w)
+		}
+	}
+}
