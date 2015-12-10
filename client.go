@@ -15,6 +15,14 @@ type Client interface {
 	GetUserData() interface{}
 }
 
+// ClientSecretMatcher is an optional interface clients can implement
+// which allows them to be the one to determine if a secret matches.
+// If a Client implements ClientSecretMatcher, the framework will never call GetSecret
+type ClientSecretMatcher interface {
+	// SecretMatches returns true if the given secret matches
+	ClientSecretMatches(secret string) bool
+}
+
 // DefaultClient stores all data in struct variables
 type DefaultClient struct {
 	Id          string
@@ -37,6 +45,11 @@ func (d *DefaultClient) GetRedirectUri() string {
 
 func (d *DefaultClient) GetUserData() interface{} {
 	return d.UserData
+}
+
+// Implement the ClientSecretMatcher interface
+func (d *DefaultClient) ClientSecretMatches(secret string) bool {
+	return d.Secret == secret
 }
 
 func (d *DefaultClient) CopyFrom(client Client) {
