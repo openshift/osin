@@ -115,9 +115,7 @@ func (d *SecuredDefaultClient) SaltPassword(newPass string) {
 
 // saltPassword compute saled Secret
 func (d *SecuredDefaultClient) saltPassword(salt string, secret string) string {
-	secret = salt + secret
-	bytes := []byte(secret)
-	sum := md5.Sum(bytes)
+	sum := md5.Sum([]byte(salt + secret))
 	salted := fmt.Sprintf("%s%x", salt, sum)
 	if len(salted) > d.MaxSecretLen {
 		salted = salted[0:d.MaxSecretLen]
