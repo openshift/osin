@@ -2,45 +2,12 @@ package osin
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
 	"math/rand"
-	"fmt"
 )
 
-var GenSalt func() string
-//var GenSalt = GenSalt6
-
-var SaltPassword func(salt string, secret string) string
-//var SaltPassword = SaltPasswordSHA256
-
-func init() {
-	SetSaltLen(6, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	SetSaltSha256("sample", 128)
-}
-
-// SetSaltSha256 Select a predifined salting function
-func SetSaltSha256(globalSalt string, maxSecretLen int) {
-	SaltPassword = func (salt string, secret string) string {
-		sumData := sha256.Sum256([]byte(globalSalt + salt + secret))
-		sumStr := fmt.Sprintf("%x", sumData)
-		if len(sumStr) > maxSecretLen {
-			sumStr = sumStr[0:maxSecretLen]
-		}
-		return sumStr
-	}
-}
-
-// SetSaltLen define a salt genrator
-func SetSaltLen(saltLen int, charset string) {
-	GenSalt = func() string {
-		b := make([]rune, saltLen)
-		var runes = []rune(charset)
-		var ll = len(runes)
-		for i:=0; i<saltLen; i++ {
-			b[i] = runes[rand.Intn(ll)];
-		}
-		return string(b)
-	}
-}
+// encodeURLRunes runes used in salt generator
+var encodeURLRunes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_")
 
 // SecuredDefaultClient Secured client Secret implementation
 type SecuredDefaultClient struct {
@@ -49,6 +16,7 @@ type SecuredDefaultClient struct {
 	SecretSum    string
 	RedirectUri  string
 	UserData     interface{}
+	SaltFn       func(salt string, secret string) (saltedSecret string, err error)
 }
 
 // GetId return the Client id
@@ -73,12 +41,37 @@ func (d *SecuredDefaultClient) GetUserData() interface{} {
 
 // ClientSecretMatches with salt encrytion
 func (d *SecuredDefaultClient) ClientSecretMatches(secret string) bool {
-	expected := SaltPassword(d.Salt, secret)
+	expected, err := d.SaltFn(d.Salt, secret)
+	if (err != nil) {
+		return false
+	}
 	return d.SecretSum == expected
 }
 
 // UpdateSaltedSecret generate a Saled Secret
 func (d *SecuredDefaultClient) UpdateSaltedSecret(newSecret string) {
-	d.Salt = GenSalt()
-	d.SecretSum = SaltPassword(d.Salt, newSecret)
+	secret, err := d.SaltFn(d.Salt, newSecret)
+	if (err != nil) {
+		return;
+	}
+	d.SecretSum = secret
+}
+
+// SaltSHA256 Select a predifined salting function
+func SaltSHA256(salt string, secret string) (string, error) {
+	// get hash bytes
+	sumData := sha256.Sum256([]byte(salt + secret))
+	// encode using base64 for greater data density than Hexadecimal
+	sumString := base64.RawURLEncoding.EncodeToString(sumData[:])
+	return sumString, nil
+}
+
+// GenSalt create a new salt
+func GenSalt(saltLen int) string {
+	b := make([]rune, saltLen)
+	var ll = len(encodeURLRunes)
+	for i:=0; i<saltLen; i++ {
+		b[i] = encodeURLRunes[rand.Intn(ll)];
+	}
+	return string(b)
 }
