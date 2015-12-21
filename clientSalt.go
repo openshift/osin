@@ -41,7 +41,7 @@ func (d *SecuredDefaultClient) GetId() string {
 
 // GetSecret return the SaltedSecret, the secret is unknow
 func (d *SecuredDefaultClient) GetSecret() string {
-	return d.SaltedSecret
+	panic("Using OSIN SecuredClient do not permit you to access secret")
 }
 
 // GetRedirectUri return One or more Base client uri separate by config.RedirectUriSeparator
@@ -60,11 +60,11 @@ func (d *SecuredDefaultClient) ClientSecretMatches(secret string) bool {
 		return false;
 	}
 	salt := d.SaltedSecret[0:saltLen]
-	expected := saltPassword(salt, secret)
+	expected := SaltPasswordSHA256(salt, secret)
 	return d.SaltedSecret == expected
 }
 
-// SaltPassword generate a Saled Secret
+// UpdateSaltedSecret generate a Saled Secret
 func (d *SecuredDefaultClient) UpdateSaltedSecret(newPass string) {
 	b := make([]rune, saltLen)
 	var runes = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -72,11 +72,11 @@ func (d *SecuredDefaultClient) UpdateSaltedSecret(newPass string) {
 	for i:=0; i<saltLen; i++ {
 		b[i] = runes[rand.Intn(ll)];
 	}
-	d.SaltedSecret = saltPassword(string(b), newPass)
+	d.SaltedSecret = SaltPasswordSHA256(string(b), newPass)
 }
 
-// saltPassword compute saled Secret
-func saltPassword(salt string, secret string) string {
+// saltPasswordSHA256 compute saled Secret
+func SaltPasswordSHA256(salt string, secret string) string {
 	sum := sha256.Sum256([]byte(globalSalt + salt + secret))
 	salted := fmt.Sprintf("%s%x", salt, sum)
 	if len(salted) > maxSecretLen {
