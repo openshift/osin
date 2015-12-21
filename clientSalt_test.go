@@ -23,15 +23,15 @@ func TestSecureClientIntfUserData(t *testing.T) {
 	MaxSecretLen(10)
 	c = &SecuredDefaultClient{Id:"V2"}
 	c.UpdateSaltedSecret(password)
-	pass1 := c.SaltedSecret
-	if len(c.SaltedSecret) != 10 {
+	pass1 := c.SecretSum
+	if len(c.SecretSum) != 10 {
 		t.Error("Secret len should be 20")
 	}
 
 	c = &SecuredDefaultClient{Id:"V2"}
 	c.UpdateSaltedSecret(password)
-	pass2 := c.SaltedSecret
-	if len(c.SaltedSecret) != 10 {
+	pass2 := c.SecretSum
+	if len(c.SecretSum) != 10 {
 		t.Error("Secret len should be 20")
 	}
 

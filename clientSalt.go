@@ -10,7 +10,7 @@ var globalSalt = "changeMe"
 
 var saltLen = 4
 
-var maxSecretLen = 40
+var maxSecretLen = 128
 
 // SaltLen number of chars used for SALT (change it one at process start)
 func SaltLen(len int) {
@@ -30,7 +30,8 @@ func MaxSecretLen(len int) {
 // SecuredDefaultClient Secured client Secret implementation
 type SecuredDefaultClient struct {
 	Id           string
-	SaltedSecret string
+	Salt         string
+	SecretSum    string
 	RedirectUri  string
 	UserData     interface{}
 }
@@ -56,31 +57,28 @@ func (d *SecuredDefaultClient) GetUserData() interface{} {
 
 // ClientSecretMatches with salt encrytion
 func (d *SecuredDefaultClient) ClientSecretMatches(secret string) bool {
-	if len(d.SaltedSecret) <= saltLen {
-		return false;
-	}
-	salt := d.SaltedSecret[0:saltLen]
-	expected := SaltPasswordSHA256(salt, secret)
-	return d.SaltedSecret == expected
+	expected := SaltPasswordSHA256(d.Salt, secret)
+	return d.SecretSum == expected
 }
 
 // UpdateSaltedSecret generate a Saled Secret
-func (d *SecuredDefaultClient) UpdateSaltedSecret(newPass string) {
+func (d *SecuredDefaultClient) UpdateSaltedSecret(newSecret string) {
 	b := make([]rune, saltLen)
 	var runes = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	var ll = len(runes)
 	for i:=0; i<saltLen; i++ {
 		b[i] = runes[rand.Intn(ll)];
 	}
-	d.SaltedSecret = SaltPasswordSHA256(string(b), newPass)
+	d.Salt = string(b)
+	d.SecretSum = SaltPasswordSHA256(d.Salt, newSecret)
 }
 
 // saltPasswordSHA256 compute saled Secret
 func SaltPasswordSHA256(salt string, secret string) string {
 	sum := sha256.Sum256([]byte(globalSalt + salt + secret))
-	salted := fmt.Sprintf("%s%x", salt, sum)
-	if len(salted) > maxSecretLen {
-		salted = salted[0:maxSecretLen]
+	sumStr := fmt.Sprintf("%x", sum)
+	if len(sumStr) > maxSecretLen {
+		sumStr = sumStr[0:maxSecretLen]
 	}
-	return salted
+	return sumStr
 }
