@@ -14,10 +14,11 @@ var SaltPassword func(salt string, secret string) string
 
 func init() {
 	SetSaltLen(6, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	SetPasswordFnc("sample", 128)
+	SetSaltSha256("sample", 128)
 }
 
-func SetPasswordFnc(globalSalt string, maxSecretLen int) {
+// SetSaltSha256 Select a predifined salting function
+func SetSaltSha256(globalSalt string, maxSecretLen int) {
 	SaltPassword = func (salt string, secret string) string {
 		sumData := sha256.Sum256([]byte(globalSalt + salt + secret))
 		sumStr := fmt.Sprintf("%x", sumData)
@@ -28,6 +29,7 @@ func SetPasswordFnc(globalSalt string, maxSecretLen int) {
 	}
 }
 
+// SetSaltLen define a salt genrator
 func SetSaltLen(saltLen int, charset string) {
 	GenSalt = func() string {
 		b := make([]rune, saltLen)

@@ -6,7 +6,7 @@ import (
 
 func TestSecureClientIntfUserData(t *testing.T) {
 	SetSaltLen(5, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	SetPasswordFnc("sample", 40)
+	SetSaltSha256("sample", 40)
 
 	c := &SecuredDefaultClient{Id:"testUnit"}
 
