@@ -16,30 +16,3 @@ func TestClientIntfUserData(t *testing.T) {
 		t.Error("Returned interface is not a reference")
 	}
 }
-
-func TestSecureClientIntfUserData(t *testing.T) {
-	c := &SecuredDefaultClient{
-		MaxSecretLen:40,
-		SaltLen:5,
-	}
-
-	password := "MySecretCode"
-	c.SaltPassword(password)
-
-	if c.ClientSecretMatches("toto") {
-		t.Error("Secure Client Accept all Password !")
-	}
-
-	if ! c.ClientSecretMatches(password) {
-		t.Error("Password Remarch failure")
-	}
-
-	c = &SecuredDefaultClient{
-		MaxSecretLen:10,
-		SaltLen:5,
-	}
-	c.SaltPassword(password)
-	if len(c.Secret) != 10 {
-		t.Error("Secret len should be 20")
-	}
-}
