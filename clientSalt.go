@@ -63,14 +63,19 @@ func (d *SecuredDefaultClient) ClientSecretMatches(secret string) bool {
 
 // UpdateSaltedSecret generate a Saled Secret
 func (d *SecuredDefaultClient) UpdateSaltedSecret(newSecret string) {
+	d.Salt = GenSalt()
+	d.SecretSum = SaltPasswordSHA256(d.Salt, newSecret)
+}
+
+// GenSalt returna random String used for salting
+func GenSalt() string {
 	b := make([]rune, saltLen)
 	var runes = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	var ll = len(runes)
 	for i:=0; i<saltLen; i++ {
 		b[i] = runes[rand.Intn(ll)];
 	}
-	d.Salt = string(b)
-	d.SecretSum = SaltPasswordSHA256(d.Salt, newSecret)
+	return string(b)
 }
 
 // saltPasswordSHA256 compute saled Secret
