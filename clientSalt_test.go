@@ -5,8 +5,9 @@ import (
 )
 
 func TestSecureClientIntfUserData(t *testing.T) {
-	MaxSecretLen(40)
-	SaltLen(5)
+	SetSaltLen(5, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	SetPasswordFnc("sample", 40)
+
 	c := &SecuredDefaultClient{Id:"testUnit"}
 
 	password := "MySecretCode"
@@ -20,7 +21,7 @@ func TestSecureClientIntfUserData(t *testing.T) {
 		t.Error("Password Remarch failure")
 	}
 
-	MaxSecretLen(10)
+	SetPasswordFnc("sample", 10)
 	c = &SecuredDefaultClient{Id:"V2"}
 	c.UpdateSaltedSecret(password)
 	pass1 := c.SecretSum
