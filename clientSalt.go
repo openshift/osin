@@ -11,12 +11,12 @@ var encodeURLRunes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxy
 
 // SecuredDefaultClient Secured client Secret implementation
 type SecuredDefaultClient struct {
-	Id           string
-	Salt         string
-	SecretSum    string
-	RedirectUri  string
-	UserData     interface{}
-	SaltFn       func(salt string, secret string) (saltedSecret string, err error)
+	Id          string
+	Salt        string
+	SecretSum   string
+	RedirectUri string
+	UserData    interface{}
+	SaltFn      func(salt string, secret string) (saltedSecret string, err error)
 }
 
 // GetId return the Client id
@@ -42,7 +42,7 @@ func (d *SecuredDefaultClient) GetUserData() interface{} {
 // ClientSecretMatches with salt encrytion
 func (d *SecuredDefaultClient) ClientSecretMatches(secret string) bool {
 	expected, err := d.SaltFn(d.Salt, secret)
-	if (err != nil) {
+	if err != nil {
 		return false
 	}
 	return d.SecretSum == expected
@@ -61,8 +61,8 @@ func SaltSHA256(salt string, secret string) (string, error) {
 func GenSalt(saltLen int) string {
 	b := make([]rune, saltLen)
 	var ll = len(encodeURLRunes)
-	for i:=0; i<saltLen; i++ {
-		b[i] = encodeURLRunes[rand.Intn(ll)];
+	for i := 0; i < saltLen; i++ {
+		b[i] = encodeURLRunes[rand.Intn(ll)]
 	}
 	return string(b)
 }
