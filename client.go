@@ -58,4 +58,3 @@ func (d *DefaultClient) CopyFrom(client Client) {
 	d.RedirectUri = client.GetRedirectUri()
 	d.UserData = client.GetUserData()
 }
-
