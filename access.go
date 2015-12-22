@@ -106,21 +106,25 @@ type AccessTokenGen interface {
 }
 
 // HandleAccessRequest is the http.HandlerFunc for handling access token requests
+// Only allow GET if Config.AllowGetAccessRequest is True or POST
 func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessRequest {
-	// Only allow GET or POST
+	var err error = nil
 	if r.Method == "GET" {
 		if !s.Config.AllowGetAccessRequest {
-			w.SetError(E_INVALID_REQUEST, "")
-			w.InternalError = errors.New("Request must be POST")
-			return nil
+			err = errors.New("Request must be POST")
 		}
 	} else if r.Method != "POST" {
+		err = errors.New("Request must be POST")
+	}
+
+	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
-		w.InternalError = errors.New("Request must be POST")
+		w.InternalError = err
 		return nil
 	}
 
-	err := r.ParseForm()
+	err = r.ParseForm()
+
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
@@ -183,18 +187,12 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		w.InternalError = err
 		return nil
 	}
-	if ret.AuthorizeData == nil {
+	// no ret.AuthorizeData.Client.GetRedirectUri()
+	if ret.AuthorizeData == nil || ret.AuthorizeData.Client == nil || ret.AuthorizeData.Client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
-	if ret.AuthorizeData.Client == nil {
-		w.SetError(E_UNAUTHORIZED_CLIENT, "")
-		return nil
-	}
-	if ret.AuthorizeData.Client.GetRedirectUri() == "" {
-		w.SetError(E_UNAUTHORIZED_CLIENT, "")
-		return nil
-	}
+
 	if ret.AuthorizeData.IsExpiredAt(s.Now()) {
 		w.SetError(E_INVALID_GRANT, "")
 		return nil
@@ -288,15 +286,8 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 		w.InternalError = err
 		return nil
 	}
-	if ret.AccessData == nil {
-		w.SetError(E_UNAUTHORIZED_CLIENT, "")
-		return nil
-	}
-	if ret.AccessData.Client == nil {
-		w.SetError(E_UNAUTHORIZED_CLIENT, "")
-		return nil
-	}
-	if ret.AccessData.Client.GetRedirectUri() == "" {
+	// error no ret.AccessData.Client.GetRedirectUri()
+	if ret.AccessData == nil || ret.AccessData.Client == nil || ret.AccessData.Client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
 		return nil
 	}
@@ -306,7 +297,6 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 		w.SetError(E_INVALID_CLIENT, "")
 		w.InternalError = errors.New("Client id must be the same from previous token")
 		return nil
-
 	}
 
 	// set rest of data
