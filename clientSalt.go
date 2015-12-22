@@ -48,15 +48,6 @@ func (d *SecuredDefaultClient) ClientSecretMatches(secret string) bool {
 	return d.SecretSum == expected
 }
 
-// UpdateSaltedSecret generate a Saled Secret
-func (d *SecuredDefaultClient) UpdateSaltedSecret(newSecret string) {
-	secret, err := d.SaltFn(d.Salt, newSecret)
-	if (err != nil) {
-		return;
-	}
-	d.SecretSum = secret
-}
-
 // SaltSHA256 Select a predifined salting function
 func SaltSHA256(salt string, secret string) (string, error) {
 	// get hash bytes

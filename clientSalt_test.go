@@ -6,10 +6,11 @@ import (
 
 func TestSecureClientIntfUserData(t *testing.T) {
 	saltFn := SaltSHA256
-	c := &SecuredDefaultClient{Id:"testUnit", Salt:GenSalt(6), SaltFn:saltFn}
-
+	salt := "MySalt"
 	password := "MySecretCode"
-	c.UpdateSaltedSecret(password)
+
+	secretSum1, _ := saltFn(salt, password)
+	c := &SecuredDefaultClient{Id:"testUnit", Salt:salt, SecretSum:secretSum1, SaltFn:saltFn}
 
 	if c.ClientSecretMatches("toto") {
 		t.Error("Secure Client Accept all Password !")
@@ -18,13 +19,12 @@ func TestSecureClientIntfUserData(t *testing.T) {
 	if ! c.ClientSecretMatches(password) {
 		t.Error("Password Remarch failure")
 	}
-	pass1 := c.SecretSum
 
-	c = &SecuredDefaultClient{Id:"testUnit", Salt:GenSalt(5), SaltFn:saltFn}
-	c.UpdateSaltedSecret(password)
-	pass2 := c.SecretSum
+	salt = "MySalT"
+	secretSum2, _ := saltFn(salt, password)
+	c = &SecuredDefaultClient{Id:"testUnit", Salt:salt, SecretSum:secretSum2, SaltFn:saltFn}
 
-	if pass1 == pass2 {
+	if secretSum1 == secretSum2 {
 		t.Error("salted secret should neved be EQ")
 	}
 }
