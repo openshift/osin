@@ -85,6 +85,11 @@ type AuthorizeTokenGen interface {
 
 // HandleAuthorizeRequest is the main http.HandlerFunc for handling
 // authorization requests
+// request must contains client_id
+// request can contains redirect_uri for Oauth redirection, if non present Oauth will redirect to the default one
+// request can contains state, scope
+// request can contains response_type == code(default 5 min expiration) || token(defautl 1h expiration)
+// return AuthorizeRequest or nil
 func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *AuthorizeRequest {
 	r.ParseForm()
 
