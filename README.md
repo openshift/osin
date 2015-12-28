@@ -69,6 +69,7 @@ You might want to check out other implementations for common database management
 * [PostgreSQL](https://github.com/ory-am/osin-storage)
 * [MongoDB](https://github.com/martint17r/osin-mongo-storage)
 * [RethinkDB](https://github.com/ahmet/osin-rethinkdb)
+* [MySQL](https://github.com/felipeweb/osin-mysql)
 
 ### License
 
