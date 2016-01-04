@@ -87,7 +87,8 @@ type AuthorizeTokenGen interface {
 // authorization requests
 // request must contains client_id
 // request can contains redirect_uri for Oauth redirection, if non present Oauth will redirect to the default one
-// request can contains state, scope
+// request can contains state
+// request must contains scope in an authorization server usage
 // request can contains response_type == code(default 5 min expiration) || token(defautl 1h expiration)
 // return AuthorizeRequest or nil
 func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *AuthorizeRequest {
@@ -186,7 +187,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			if ar.State != "" && w.InternalError == nil {
 				w.Output["state"] = ar.State
 			}
-		} else {
+		} else { //  ar.Type == CODE
 			// generate authorization token
 			ret := &AuthorizeData{
 				Client:      ar.Client,
