@@ -54,7 +54,10 @@ func CheckBearerAuth(r *http.Request) *BearerAuth {
 		if (len(s) != 2 || s[0] != "Bearer") && token == "" {
 			return nil
 		}
-		token = s[1]
+		//Use authorization header token only if token type is bearer else query string access token would be returned
+		if(len(s)>0 && s[0]=="Bearer"){
+			token = s[1]
+		}
 	}
 	return &BearerAuth{Code: token}
 }
