@@ -51,11 +51,11 @@ func CheckBearerAuth(r *http.Request) *BearerAuth {
 	token := authForm
 	if authHeader != "" {
 		s := strings.SplitN(authHeader, " ", 2)
-		if (len(s) != 2 ||  strings.toLower(s[0]) != "bearer") && token == "" {
+		if (len(s) != 2 ||  strings.ToLower(s[0]) != "bearer") && token == "" {
 			return nil
 		}
 		//Use authorization header token only if token type is bearer else query string access token would be returned
-		if(len(s)>0 && strings.toLower(s[0])=="bearer"){
+		if(len(s)>0 && strings.ToLower(s[0])=="bearer"){
 			token = s[1]
 		}
 	}
