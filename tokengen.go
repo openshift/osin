@@ -1,38 +1,47 @@
 package osin
 
 import (
+	"crypto/rand"
 	"encoding/base64"
+	"io"
 	"strings"
-
-	"github.com/pborman/uuid"
 )
+
+func randomBytes(len int) []byte {
+	b := make([]byte, len)
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
+		// rand.Reader should never fail
+		panic(err.Error())
+	}
+	return b
+}
+func randomToken() string {
+	// 16 bytes (128 bits) = 22 base64-encoded characters
+	b := randomBytes(16)
+	// Use URLEncoding to ensure we don't get / characters
+	s := base64.URLEncoding.EncodeToString(b)
+	// Strip trailing ='s... they're ugly
+	return strings.TrimRight(s, "=")
+}
 
 // AuthorizeTokenGenDefault is the default authorization token generator
 type AuthorizeTokenGenDefault struct {
 }
 
-func removePadding(token string) string {
-	return strings.TrimRight(token, "=")
-}
-
-// GenerateAuthorizeToken generates a base64-encoded UUID code
+// GenerateAuthorizeToken generates a base64-encoded random code
 func (a *AuthorizeTokenGenDefault) GenerateAuthorizeToken(data *AuthorizeData) (ret string, err error) {
-	token := uuid.NewRandom()
-	return removePadding(base64.URLEncoding.EncodeToString([]byte(token))), nil
+	return randomToken(), nil
 }
 
 // AccessTokenGenDefault is the default authorization token generator
 type AccessTokenGenDefault struct {
 }
 
-// GenerateAccessToken generates base64-encoded UUID access and refresh tokens
+// GenerateAccessToken generates base64-encoded random access and refresh tokens
 func (a *AccessTokenGenDefault) GenerateAccessToken(data *AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error) {
-	token := uuid.NewRandom()
-	accesstoken = removePadding(base64.URLEncoding.EncodeToString([]byte(token)))
-
+	accesstoken = randomToken()
 	if generaterefresh {
-		rtoken := uuid.NewRandom()
-		refreshtoken = removePadding(base64.URLEncoding.EncodeToString([]byte(rtoken)))
+		refreshtoken = randomToken()
 	}
 	return
 }
