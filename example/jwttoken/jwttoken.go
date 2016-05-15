@@ -33,7 +33,7 @@ func (c *AccessTokenGenJWT) GenerateAccessToken(data *osin.AccessData, generater
 		return
 	}
 
-	// generate JWT access token
+	// generate JWT refresh token
 	token = jwt.New(jwt.GetSigningMethod("RS256"))
 	token.Claims["cid"] = data.Client.GetId()
 	token.Claims["at"] = accesstoken
