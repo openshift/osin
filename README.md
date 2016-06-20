@@ -70,6 +70,7 @@ You might want to check out other implementations for common database management
 * [MongoDB](https://github.com/martint17r/osin-mongo-storage)
 * [RethinkDB](https://github.com/ahmet/osin-rethinkdb)
 * [DynamoDB](https://github.com/uniplaces/osin-dynamodb)
+* [Couchbase](github.com/elgris/osin-couchbase-storage)
 
 ### License
 
