@@ -508,6 +508,7 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 	}
 	if client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("Client not found")
 		return nil
 	}
 
@@ -516,18 +517,21 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 		// Prefer the more secure method of giving the secret to the client for comparison
 		if !client.ClientSecretMatches(auth.Password) {
 			w.SetError(E_UNAUTHORIZED_CLIENT, "")
+			w.InternalError = errors.New("Client secrets do not match (ClientSecretMatches)")
 			return nil
 		}
 	default:
 		// Fallback to the less secure method of extracting the plain text secret from the client for comparison
 		if client.GetSecret() != auth.Password {
 			w.SetError(E_UNAUTHORIZED_CLIENT, "")
+			w.InternalError = errors.New("Client secrets do not match (plain text comparsion)")
 			return nil
 		}
 	}
 
 	if client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("Client's Redirect URI empty")
 		return nil
 	}
 	return client
