@@ -37,8 +37,6 @@ func (c *AccessTokenGenJWT) GenerateAccessToken(data *osin.AccessData, generater
 	// generate JWT refresh token
 	token = jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"cid": data.Client.GetId(),
-		"at":  accesstoken,
-		"exp": data.ExpireAt().Unix(),
 	})
 
 	refreshtoken, err = token.SignedString(c.PrivateKey)
