@@ -20,9 +20,10 @@ type AccessTokenGenJWT struct {
 
 func (c *AccessTokenGenJWT) GenerateAccessToken(data *osin.AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error) {
 	// generate JWT access token
-	token := jwt.New(jwt.GetSigningMethod("RS256"))
-	token.Claims["cid"] = data.Client.GetId()
-	token.Claims["exp"] = data.ExpireAt().Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"cid": data.Client.GetId(),
+		"exp": data.ExpireAt().Unix(),
+	})
 
 	accesstoken, err = token.SignedString(c.PrivateKey)
 	if err != nil {
@@ -34,10 +35,9 @@ func (c *AccessTokenGenJWT) GenerateAccessToken(data *osin.AccessData, generater
 	}
 
 	// generate JWT refresh token
-	token = jwt.New(jwt.GetSigningMethod("RS256"))
-	token.Claims["cid"] = data.Client.GetId()
-	token.Claims["at"] = accesstoken
-	token.Claims["exp"] = data.ExpireAt().Unix()
+	token = jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"cid": data.Client.GetId(),
+	})
 
 	refreshtoken, err = token.SignedString(c.PrivateKey)
 	if err != nil {
