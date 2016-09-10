@@ -511,19 +511,9 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 		return nil
 	}
 
-	switch client := client.(type) {
-	case ClientSecretMatcher:
-		// Prefer the more secure method of giving the secret to the client for comparison
-		if !client.ClientSecretMatches(auth.Password) {
-			w.SetError(E_UNAUTHORIZED_CLIENT, "")
-			return nil
-		}
-	default:
-		// Fallback to the less secure method of extracting the plain text secret from the client for comparison
-		if client.GetSecret() != auth.Password {
-			w.SetError(E_UNAUTHORIZED_CLIENT, "")
-			return nil
-		}
+	if !CheckClientSecret(client, auth.Password) {
+		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		return nil
 	}
 
 	if client.GetRedirectUri() == "" {
