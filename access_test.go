@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"testing"
+	"time"
 )
 
 func TestAccessAuthorizationCode(t *testing.T) {
@@ -310,6 +311,96 @@ func TestGetClientSecretMatcher(t *testing.T) {
 		client := getClient(auth, storage, w)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
+		}
+	}
+}
+
+func TestAccessAuthorizationCodePKCE(t *testing.T) {
+	testcases := map[string]struct {
+		Challenge       string
+		ChallengeMethod string
+		Verifier        string
+		ExpectedError   string
+	}{
+		"good, plain": {
+			Challenge: "12345678901234567890123456789012345678901234567890",
+			Verifier:  "12345678901234567890123456789012345678901234567890",
+		},
+		"bad, plain": {
+			Challenge:     "12345678901234567890123456789012345678901234567890",
+			Verifier:      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+			ExpectedError: "invalid_grant",
+		},
+		"good, S256": {
+			Challenge:       "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+			ChallengeMethod: "S256",
+			Verifier:        "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+		},
+		"bad, S256": {
+			Challenge:       "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+			ChallengeMethod: "S256",
+			Verifier:        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+			ExpectedError:   "invalid_grant",
+		},
+		"missing from storage": {
+			Challenge:       "",
+			ChallengeMethod: "",
+			Verifier:        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+		},
+	}
+
+	for k, test := range testcases {
+		testStorage := NewTestingStorage()
+		sconfig := NewServerConfig()
+		sconfig.AllowedAccessTypes = AllowedAccessType{AUTHORIZATION_CODE}
+		server := NewServer(sconfig, testStorage)
+		server.AccessTokenGen = &TestingAccessTokenGen{}
+		server.Storage.SaveAuthorize(&AuthorizeData{
+			Client:              testStorage.clients["public-client"],
+			Code:                "pkce-code",
+			ExpiresIn:           3600,
+			CreatedAt:           time.Now(),
+			RedirectUri:         "http://localhost:14000/appauth",
+			CodeChallenge:       test.Challenge,
+			CodeChallengeMethod: test.ChallengeMethod,
+		})
+		resp := server.NewResponse()
+
+		req, err := http.NewRequest("POST", "http://localhost:14000/appauth", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req.SetBasicAuth("public-client", "")
+
+		req.Form = make(url.Values)
+		req.Form.Set("grant_type", string(AUTHORIZATION_CODE))
+		req.Form.Set("code", "pkce-code")
+		req.Form.Set("state", "a")
+		req.Form.Set("code_verifier", test.Verifier)
+		req.PostForm = make(url.Values)
+
+		if ar := server.HandleAccessRequest(resp, req); ar != nil {
+			ar.Authorized = true
+			server.FinishAccessRequest(resp, req, ar)
+		}
+
+		if resp.IsError {
+			if test.ExpectedError == "" || test.ExpectedError != resp.ErrorId {
+				t.Errorf("%s: unexpected error: %v, %v", k, resp.ErrorId, resp.StatusText)
+				continue
+			}
+		}
+		if test.ExpectedError == "" {
+			if resp.Type != DATA {
+				t.Fatalf("%s: Response should be data", k)
+			}
+			if d := resp.Output["access_token"]; d != "1" {
+				t.Fatalf("%s: Unexpected access token: %s", k, d)
+			}
+			if d := resp.Output["refresh_token"]; d != "r1" {
+				t.Fatalf("%s: Unexpected refresh token: %s", k, d)
+			}
 		}
 	}
 }

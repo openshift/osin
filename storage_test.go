@@ -27,6 +27,11 @@ func NewTestingStorage() *TestingStorage {
 		RedirectUri: "http://localhost:14000/appauth",
 	}
 
+	r.clients["public-client"] = &DefaultClient{
+		Id:          "public-client",
+		RedirectUri: "http://localhost:14000/appauth",
+	}
+
 	r.authorize["9999"] = &AuthorizeData{
 		Client:      r.clients["1234"],
 		Code:        "9999",
