@@ -232,7 +232,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		// https://tools.ietf.org/html/rfc7636#section-4.1
 		if matched := pkceMatcher.MatchString(ret.CodeVerifier); !matched {
 			w.SetError(E_INVALID_REQUEST, "code_verifier invalid (rfc7636)")
-			w.InternalError = errors.New("invalid format")
+			w.InternalError = errors.New("code_verifier has invalid format")
 			return nil
 		}
 
@@ -250,7 +250,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		}
 		if codeVerifier != ret.AuthorizeData.CodeChallenge {
 			w.SetError(E_INVALID_GRANT, "code_verifier invalid (rfc7636)")
-			w.InternalError = errors.New("failed comparison with code_challenge")
+			w.InternalError = errors.New("code_verifier failed comparison with code_challenge")
 			return nil
 		}
 	}
