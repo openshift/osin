@@ -117,8 +117,16 @@ func (r *Response) GetRedirectUrl() (string, error) {
 		return "", err
 	}
 
+	var q url.Values
+	if r.RedirectInFragment {
+		// start with empty set for fragment
+		q = url.Values{}
+	} else {
+		// add parameters to existing query
+		q = u.Query()
+	}
+
 	// add parameters
-	q := u.Query()
 	for n, v := range r.Output {
 		q.Set(n, fmt.Sprint(v))
 	}
@@ -127,7 +135,6 @@ func (r *Response) GetRedirectUrl() (string, error) {
 	// Fragment should be encoded as application/x-www-form-urlencoded (%-escaped, spaces are represented as '+')
 	// The stdlib URL#String() doesn't make that easy to accomplish, so build this ourselves
 	if r.RedirectInFragment {
-		u.RawQuery = ""
 		u.Fragment = ""
 		redirectURI := u.String() + "#" + q.Encode()
 		return redirectURI, nil

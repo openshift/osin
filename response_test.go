@@ -18,18 +18,18 @@ func TestGetRedirectUrl(t *testing.T) {
 		ExpectedURL string
 	}{
 		"query": {
-			URL:         "https://foo.com/path",
+			URL:         "https://foo.com/path?abc=123",
 			Output:      ResponseData{"access_token": "12345", "state": state},
-			ExpectedURL: "https://foo.com/path?access_token=12345&state=%7B%22then%22%3A+%22%2Findex.html%3Fa%3D1%26b%3D%252B%23fragment%22%2C+%22nonce%22%3A+%22014f%3Abff9a07c%22%7D",
+			ExpectedURL: "https://foo.com/path?abc=123&access_token=12345&state=%7B%22then%22%3A+%22%2Findex.html%3Fa%3D1%26b%3D%252B%23fragment%22%2C+%22nonce%22%3A+%22014f%3Abff9a07c%22%7D",
 		},
 
 		// https://tools.ietf.org/html/rfc6749#section-4.2.2
 		// Fragment should be encoded as application/x-www-form-urlencoded (%-escaped, spaces are represented as '+')
 		"fragment": {
-			URL:                "https://foo.com/path",
+			URL:                "https://foo.com/path?abc=123",
 			Output:             ResponseData{"access_token": "12345", "state": state},
 			RedirectInFragment: true,
-			ExpectedURL:        "https://foo.com/path#access_token=12345&state=%7B%22then%22%3A+%22%2Findex.html%3Fa%3D1%26b%3D%252B%23fragment%22%2C+%22nonce%22%3A+%22014f%3Abff9a07c%22%7D",
+			ExpectedURL:        "https://foo.com/path?abc=123#access_token=12345&state=%7B%22then%22%3A+%22%2Findex.html%3Fa%3D1%26b%3D%252B%23fragment%22%2C+%22nonce%22%3A+%22014f%3Abff9a07c%22%7D",
 		},
 	}
 
