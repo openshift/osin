@@ -75,6 +75,7 @@ You might want to check out other implementations for common database management
 * [DynamoDB](https://github.com/uniplaces/osin-dynamodb)
 * [Couchbase](https://github.com/elgris/osin-couchbase-storage)
 * [MySQL](https://github.com/felipeweb/osin-mysql)
+* [Redis](https://github.com/ShaleApps/osinredis)
 
 ### License
 
