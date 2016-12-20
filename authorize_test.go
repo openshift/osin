@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+
+	"golang.org/x/net/context"
 )
 
 func TestAuthorizeCode(t *testing.T) {
@@ -188,7 +190,7 @@ func TestAuthorizeCodePKCEPlain(t *testing.T) {
 		t.Fatalf("Unexpected authorization code: %s", code)
 	}
 
-	token, err := server.Storage.LoadAuthorize(code)
+	token, err := server.storage().LoadAuthorize(context.TODO(), code)
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -244,7 +246,7 @@ func TestAuthorizeCodePKCES256(t *testing.T) {
 		t.Fatalf("Unexpected authorization code: %s", code)
 	}
 
-	token, err := server.Storage.LoadAuthorize(code)
+	token, err := server.storage().LoadAuthorize(context.TODO(), code)
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}

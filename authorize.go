@@ -104,6 +104,7 @@ type AuthorizeTokenGen interface {
 // HandleAuthorizeRequest is the main http.HandlerFunc for handling
 // authorization requests
 func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *AuthorizeRequest {
+	ctx := contextFromRequest(r)
 	r.ParseForm()
 
 	// create the authorization request
@@ -123,7 +124,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	}
 
 	// must have a valid client
-	ret.Client, err = w.Storage.GetClient(r.Form.Get("client_id"))
+	ret.Client, err = w.storage().GetClient(ctx, r.Form.Get("client_id"))
 	if err != nil {
 		w.SetErrorState(E_SERVER_ERROR, "", ret.State)
 		w.InternalError = err
@@ -200,6 +201,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 }
 
 func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *AuthorizeRequest) {
+	ctx := contextFromRequest(r)
 	// don't process if is already an error
 	if w.IsError {
 		return
@@ -254,7 +256,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			ret.Code = code
 
 			// save authorization token
-			if err = w.Storage.SaveAuthorize(ret); err != nil {
+			if err = w.storage().SaveAuthorize(ctx, ret); err != nil {
 				w.SetErrorState(E_SERVER_ERROR, "", ar.State)
 				w.InternalError = err
 				return

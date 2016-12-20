@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/net/context"
 )
 
 // Data for response output
@@ -33,18 +35,23 @@ type Response struct {
 	RedirectInFragment bool
 
 	// Storage to use in this response - required
-	Storage Storage
+	Storage            Storage
+	StorageWithContext StorageWithContext
 }
 
 func NewResponse(storage Storage) *Response {
+	return NewResponseWithContext(&oldStorageWithContext{storage})
+}
+
+func NewResponseWithContext(storage StorageWithContext) *Response {
 	r := &Response{
-		Type:            DATA,
-		StatusCode:      200,
-		ErrorStatusCode: 200,
-		Output:          make(ResponseData),
-		Headers:         make(http.Header),
-		IsError:         false,
-		Storage:         storage.Clone(),
+		Type:               DATA,
+		StatusCode:         200,
+		ErrorStatusCode:    200,
+		Output:             make(ResponseData),
+		Headers:            make(http.Header),
+		IsError:            false,
+		StorageWithContext: storage.Clone(context.TODO()),
 	}
 	r.Headers.Add(
 		"Cache-Control",
@@ -53,6 +60,13 @@ func NewResponse(storage Storage) *Response {
 	r.Headers.Add("Pragma", "no-cache")
 	r.Headers.Add("Expires", "Fri, 01 Jan 1990 00:00:00 GMT")
 	return r
+}
+
+func (r *Response) storage() StorageWithContext {
+	if r.StorageWithContext == nil {
+		return &oldStorageWithContext{Storage: r.Storage}
+	}
+	return r.StorageWithContext
 }
 
 // SetError sets an error id and description on the Response
@@ -147,5 +161,5 @@ func (r *Response) GetRedirectUrl() (string, error) {
 }
 
 func (r *Response) Close() {
-	r.Storage.Close()
+	r.storage().Close()
 }
