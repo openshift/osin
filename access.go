@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -108,6 +107,11 @@ func (d *AccessData) ExpireAt() time.Time {
 // AccessTokenGen generates access tokens
 type AccessTokenGen interface {
 	GenerateAccessToken(data *AccessData, generaterefresh bool) (accesstoken string, refreshtoken string, err error)
+}
+
+// AccessTokenSubScoper checks if the requested scopes of AT are a subset of already granted scopes.
+type AccessTokenSubScoper interface {
+	CheckSubScopes(requestedScopes string, grantedScopes string) (resultingScope string, err error)
 }
 
 // HandleAccessRequest is the http.HandlerFunc for handling access token requests
@@ -262,30 +266,6 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	return ret
 }
 
-func extraScopes(access_scopes, refresh_scopes string) bool {
-	access_scopes_list := strings.Split(access_scopes, ",")
-	refresh_scopes_list := strings.Split(refresh_scopes, ",")
-
-	access_map := make(map[string]int)
-
-	for _, scope := range access_scopes_list {
-		if scope == "" {
-			continue
-		}
-		access_map[scope] = 1
-	}
-
-	for _, scope := range refresh_scopes_list {
-		if scope == "" {
-			continue
-		}
-		if _, ok := access_map[scope]; !ok {
-			return true
-		}
-	}
-	return false
-}
-
 func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *AccessRequest {
 	// get client authentication
 	auth := getClientAuth(w, r, s.Config.AllowClientSecretInParams)
@@ -350,7 +330,8 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 		ret.Scope = ret.AccessData.Scope
 	}
 
-	if extraScopes(ret.AccessData.Scope, ret.Scope) {
+	ret.Scope, err = s.AccessTokenSubScoper.CheckSubScopes(ret.Scope, ret.AccessData.Scope)
+	if err != nil {
 		w.SetError(E_ACCESS_DENIED, "")
 		w.InternalError = errors.New("the requested scope must not include any scope not originally granted by the resource owner")
 		return nil
