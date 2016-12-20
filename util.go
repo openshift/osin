@@ -34,7 +34,7 @@ func CheckClientSecret(client Client, secret string) bool {
 // Return authorization header data
 func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	if r.Header.Get("Authorization") == "" {
-		return nil, nil
+		return nil, errors.New("Missing authorization header")
 	}
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)

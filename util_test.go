@@ -16,7 +16,7 @@ func TestBasicAuth(t *testing.T) {
 	r := &http.Request{Header: make(http.Header)}
 
 	// Without any header
-	if b, err := CheckBasicAuth(r); b != nil || err != nil {
+	if b, err := CheckBasicAuth(r); b != nil || err == nil {
 		t.Errorf("Validated basic auth without header")
 	}
 

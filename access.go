@@ -172,7 +172,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 
 	// "code" is required
 	if ret.Code == "" {
-		w.SetError(E_INVALID_GRANT, "")
+		w.SetError(E_INVALID_GRANT, "code parameter is required")
 		return nil
 	}
 
@@ -185,30 +185,35 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	var err error
 	ret.AuthorizeData, err = w.Storage.LoadAuthorize(ret.Code)
 	if err != nil {
-		w.SetError(E_INVALID_GRANT, "")
+		w.SetError(E_INVALID_GRANT, "bad authorization code")
 		w.InternalError = err
 		return nil
 	}
 	if ret.AuthorizeData == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("missing authorize data")
 		return nil
 	}
 	if ret.AuthorizeData.Client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("missing client in authorize data")
 		return nil
 	}
 	if ret.AuthorizeData.Client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("client missing redirect URI")
 		return nil
 	}
 	if ret.AuthorizeData.IsExpiredAt(s.Now()) {
 		w.SetError(E_INVALID_GRANT, "")
+		w.InternalError = errors.New("authorize data is expired")
 		return nil
 	}
 
 	// code must be from the client
 	if ret.AuthorizeData.Client.GetId() != ret.Client.GetId() {
 		w.SetError(E_INVALID_GRANT, "")
+		w.InternalError = errors.New("client id of authorize data doesn't match request's")
 		return nil
 	}
 
@@ -305,7 +310,8 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 
 	// "refresh_token" is required
 	if ret.Code == "" {
-		w.SetError(E_INVALID_GRANT, "")
+		w.SetError(E_INVALID_GRANT, "refresh_token parameter is required")
+		w.InternalError = errors.New("refresh_token parameter is required")
 		return nil
 	}
 
@@ -324,14 +330,17 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	}
 	if ret.AccessData == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("missing access data")
 		return nil
 	}
 	if ret.AccessData.Client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("missing client in access data")
 		return nil
 	}
 	if ret.AccessData.Client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("client missing redirect URI")
 		return nil
 	}
 
@@ -379,7 +388,8 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 
 	// "username" and "password" is required
 	if ret.Username == "" || ret.Password == "" {
-		w.SetError(E_INVALID_GRANT, "")
+		w.SetError(E_INVALID_GRANT, "username and password parameters missing")
+		w.InternalError = errors.New("username and password parameters missing")
 		return nil
 	}
 
@@ -542,6 +552,7 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 	}
 	if client == nil {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("missing client for basic request")
 		return nil
 	}
 
@@ -552,6 +563,7 @@ func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 
 	if client.GetRedirectUri() == "" {
 		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		w.InternalError = errors.New("client missing redirect URI")
 		return nil
 	}
 	return client
