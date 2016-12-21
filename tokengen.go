@@ -39,26 +39,26 @@ type AccessTokenSubScoperDefault struct {
 }
 
 // GenerateAccessToken generates base64-encoded UUID access and refresh tokens
-func (a *AccessTokenSubScoperDefault) CheckSubScopes(requestedScopes string, grantedScopes string) (resultingScope string, err error) {
-	access_scopes_list := strings.Split(requestedScopes, ",")
-	refresh_scopes_list := strings.Split(grantedScopes, ",")
+func (a *AccessTokenSubScoperDefault) CheckSubScopes(accessTokenScopes string, refreshTokenScopes string) (resultingScope string, err error) {
+	refresh_scopes_list := strings.Split(refreshTokenScopes, ",")
+	access_scope_list := strings.Split(accessTokenScopes, ",")
 
-	access_map := make(map[string]int)
-
-	for _, scope := range access_scopes_list {
-		if scope == "" {
-			continue
-		}
-		access_map[scope] = 1
-	}
+	refresh_map := make(map[string]int)
 
 	for _, scope := range refresh_scopes_list {
 		if scope == "" {
 			continue
 		}
-		if _, ok := access_map[scope]; !ok {
+		refresh_map[scope] = 1
+	}
+
+	for _, scope := range access_scope_list {
+		if scope == "" {
+			continue
+		}
+		if _, ok := refresh_map[scope]; !ok {
 			return "", fmt.Errorf("scope %v is not in original grant")
 		}
 	}
-	return requestedScopes, nil
+	return accessTokenScopes, nil
 }
