@@ -357,7 +357,7 @@ func TestAccessAuthorizationCodePKCE(t *testing.T) {
 		sconfig.AllowedAccessTypes = AllowedAccessType{AUTHORIZATION_CODE}
 		server := NewServer(sconfig, testStorage)
 		server.AccessTokenGen = &TestingAccessTokenGen{}
-		server.storage().SaveAuthorize(context.TODO(), &AuthorizeData{
+		server.GetStorage().SaveAuthorize(context.TODO(), &AuthorizeData{
 			Client:              testStorage.clients["public-client"],
 			Code:                "pkce-code",
 			ExpiresIn:           3600,

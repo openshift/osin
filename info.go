@@ -35,7 +35,7 @@ func (s *Server) HandleInfoRequest(w *Response, r *http.Request) *InfoRequest {
 	var err error
 
 	// load access data
-	ret.AccessData, err = w.storage().LoadAccess(ctx, ret.Code)
+	ret.AccessData, err = w.GetStorage().LoadAccess(ctx, ret.Code)
 	if err != nil {
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err

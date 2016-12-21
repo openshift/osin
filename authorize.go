@@ -124,7 +124,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	}
 
 	// must have a valid client
-	ret.Client, err = w.storage().GetClient(ctx, r.Form.Get("client_id"))
+	ret.Client, err = w.GetStorage().GetClient(ctx, r.Form.Get("client_id"))
 	if err != nil {
 		w.SetErrorState(E_SERVER_ERROR, "", ret.State)
 		w.InternalError = err
@@ -256,7 +256,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			ret.Code = code
 
 			// save authorization token
-			if err = w.storage().SaveAuthorize(ctx, ret); err != nil {
+			if err = w.GetStorage().SaveAuthorize(ctx, ret); err != nil {
 				w.SetErrorState(E_SERVER_ERROR, "", ar.State)
 				w.InternalError = err
 				return

@@ -32,12 +32,13 @@ func NewServerWithContext(config *ServerConfig, storage StorageWithContext) *Ser
 
 // NewResponse creates a new response for the server
 func (s *Server) NewResponse() *Response {
-	r := NewResponseWithContext(s.storage())
+	r := NewResponseWithContext(s.GetStorage())
 	r.ErrorStatusCode = s.Config.ErrorStatusCode
 	return r
 }
 
-func (s *Server) storage() StorageWithContext {
+// GetStorage is a getter for the StorageWithContext associated with the Server.
+func (s *Server) GetStorage() StorageWithContext {
 	if s.StorageWithContext == nil {
 		return &oldStorageWithContext{Storage: s.Storage}
 	}

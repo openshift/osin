@@ -62,7 +62,8 @@ func NewResponseWithContext(storage StorageWithContext) *Response {
 	return r
 }
 
-func (r *Response) storage() StorageWithContext {
+// GetStorage is a getter for the clone of the StorageWithContext associated with the Response.
+func (r *Response) GetStorage() StorageWithContext {
 	if r.StorageWithContext == nil {
 		return &oldStorageWithContext{Storage: r.Storage}
 	}
@@ -161,5 +162,5 @@ func (r *Response) GetRedirectUrl() (string, error) {
 }
 
 func (r *Response) Close() {
-	r.storage().Close()
+	r.GetStorage().Close()
 }
