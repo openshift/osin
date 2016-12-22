@@ -16,7 +16,9 @@ type Server struct {
 
 // NewServer creates a new server instance
 func NewServer(config *ServerConfig, storage Storage) *Server {
-	return NewServerWithContext(config, &oldStorageWithContext{storage})
+	s := NewServerWithContext(config, &oldStorageWithContext{storage})
+	s.Storage = storage
+	return s
 }
 
 // NewServerWithContext creates a new server instance that has a context-aware storage.

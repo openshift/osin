@@ -40,18 +40,26 @@ type Response struct {
 }
 
 func NewResponse(storage Storage) *Response {
-	return NewResponseWithContext(&oldStorageWithContext{storage})
+	r := newResponse()
+	r.Storage = storage.Clone()
+	r.StorageWithContext = &oldStorageWithContext{r.Storage}
+	return r
 }
 
 func NewResponseWithContext(storage StorageWithContext) *Response {
+	r := newResponse()
+	r.StorageWithContext = storage.Clone(context.TODO())
+	return r
+}
+
+func newResponse() *Response {
 	r := &Response{
-		Type:               DATA,
-		StatusCode:         200,
-		ErrorStatusCode:    200,
-		Output:             make(ResponseData),
-		Headers:            make(http.Header),
-		IsError:            false,
-		StorageWithContext: storage.Clone(context.TODO()),
+		Type:            DATA,
+		StatusCode:      200,
+		ErrorStatusCode: 200,
+		Output:          make(ResponseData),
+		Headers:         make(http.Header),
+		IsError:         false,
 	}
 	r.Headers.Add(
 		"Cache-Control",
@@ -62,7 +70,7 @@ func NewResponseWithContext(storage StorageWithContext) *Response {
 	return r
 }
 
-// GetStorage is a getter for the clone of the StorageWithContext associated with the Response.
+// GetStorage is a getter for the StorageWithContext associated with the Response.
 func (r *Response) GetStorage() StorageWithContext {
 	if r.StorageWithContext == nil {
 		return &oldStorageWithContext{Storage: r.Storage}
