@@ -32,10 +32,9 @@ func CheckClientSecret(client Client, secret string) bool {
 }
 
 // CheckBasicAuth returns basic auth information from the request.
-// In case an Authorization header is missing, or parse errors, an error is returned.
 func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 	if r.Header.Get("Authorization") == "" {
-		return nil, errors.New("Missing authorization header")
+		return nil, nil
 	}
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
