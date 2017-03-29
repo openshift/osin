@@ -507,7 +507,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		}
 
 		// remove previous access token
-		if ret.AccessData != nil {
+		if ret.AccessData != nil && !s.Config.RetainTokenAfterRefresh {
 			if ret.AccessData.RefreshToken != "" {
 				w.Storage.RemoveRefresh(ret.AccessData.RefreshToken)
 			}
