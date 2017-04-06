@@ -5,10 +5,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/RangelReale/osin"
-	"github.com/RangelReale/osin/example"
 	"net/http"
 	"net/url"
+
+	"github.com/RangelReale/osin"
+	"github.com/RangelReale/osin/example"
 )
 
 func main() {
@@ -64,9 +65,10 @@ func main() {
 
 	// Application home endpoint
 	http.HandleFunc("/app", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("<html><body>"))
-		w.Write([]byte(fmt.Sprintf("<a href=\"/authorize?response_type=code&client_id=1234&state=xyz&scope=everything&redirect_uri=%s\">Login</a><br/>", url.QueryEscape("http://localhost:14000/appauth/code"))))
-		w.Write([]byte("</body></html>"))
+		w.Write([]byte(`<html><body>`))
+		w.Write([]byte(fmt.Sprintf(`<a href="/authorize?response_type=code&client_id=1234&state=xyz&scope=everything&redirect_uri=%s">Login</a><br/>`,
+			url.QueryEscape("http://localhost:14000/appauth/code"))))
+		w.Write([]byte(`</body></html>`))
 	})
 
 	// Application destination - CODE
@@ -75,12 +77,12 @@ func main() {
 
 		code := r.Form.Get("code")
 
-		w.Write([]byte("<html><body>"))
-		w.Write([]byte("APP AUTH - CODE<br/>"))
-		defer w.Write([]byte("</body></html>"))
+		w.Write([]byte(`<html><body>`))
+		w.Write([]byte(`APP AUTH - CODE<br/>`))
+		defer w.Write([]byte(`</body></html>`))
 
 		if code == "" {
-			w.Write([]byte("Nothing to do"))
+			w.Write([]byte(`Nothing to do`))
 			return
 		}
 
@@ -96,30 +98,30 @@ func main() {
 				&osin.BasicAuth{"1234", "aabbccdd"}, jr)
 			if err != nil {
 				w.Write([]byte(err.Error()))
-				w.Write([]byte("<br/>"))
+				w.Write([]byte(`<br/>`))
 			}
 		}
 
 		// show json error
 		if erd, ok := jr["error"]; ok {
-			w.Write([]byte(fmt.Sprintf("ERROR: %s<br/>\n", erd)))
+			w.Write([]byte(fmt.Sprintf(`ERROR: %s<br/>\n`, erd)))
 		}
 
 		// show json access token
 		if at, ok := jr["access_token"]; ok {
-			w.Write([]byte(fmt.Sprintf("ACCESS TOKEN: %s<br/>\n", at)))
+			w.Write([]byte(fmt.Sprintf(`ACCESS TOKEN: %s<br/>\n`, at)))
 		}
 
-		w.Write([]byte(fmt.Sprintf("FULL RESULT: %+v<br/>\n", jr)))
+		w.Write([]byte(fmt.Sprintf(`FULL RESULT: %+v<br/>\n`, jr)))
 
 		// output links
-		w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Goto Token URL</a><br/>", aurl)))
+		w.Write([]byte(fmt.Sprintf(`<a href="%s">Goto Token URL</a><br/>`, aurl)))
 
 		cururl := *r.URL
 		curq := cururl.Query()
 		curq.Add("doparse", "1")
 		cururl.RawQuery = curq.Encode()
-		w.Write([]byte(fmt.Sprintf("<a href=\"%s\">Download Token</a><br/>", cururl.String())))
+		w.Write([]byte(fmt.Sprintf(`<a href="%s">Download Token</a><br/>`, cururl.String())))
 	})
 
 	http.ListenAndServe(":14000", nil)
