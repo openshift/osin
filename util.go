@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"reflect"
 	"strings"
 )
 
@@ -105,4 +106,28 @@ func getClientAuth(w *Response, r *http.Request, allowQueryParams bool) *BasicAu
 		return nil
 	}
 	return auth
+}
+
+func EqualAuthorizeRequestType(t1, t2 AuthorizeRequestType) bool {
+	t1s := strings.Split(string(t1), " ")
+	t2s := strings.Split(string(t2), " ")
+	return reflect.DeepEqual(t1s, t2s)
+}
+
+func GetKnownAuthorizeRequestType(rt AuthorizeRequestType) AuthorizeRequestType {
+	rts := strings.Split(string(rt), " ")
+	hasToken := false
+	for _, v := range rts {
+		switch AuthorizeRequestType(v) {
+		case CODE: // if both of CODE and TOKEN exist, considered as code flow
+			return CODE
+		case TOKEN:
+			hasToken = true
+		}
+	}
+	if hasToken {
+		return TOKEN
+	} else {
+		return ""
+	}
 }
