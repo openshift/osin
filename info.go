@@ -78,4 +78,7 @@ func (s *Server) FinishInfoRequest(w *Response, r *http.Request, ir *InfoRequest
 	if ir.AccessData.Scope != "" {
 		w.Output["scope"] = ir.AccessData.Scope
 	}
+	if ir.AccessData.UserData != "" {
+		w.Output["user_data"] = ir.AccessData.UserData
+	}
 }
