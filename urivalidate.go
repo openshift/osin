@@ -27,8 +27,7 @@ func ValidateUriList(baseUriList string, redirectUri string, separator string) e
 	if separator != "" {
 		slist = strings.Split(baseUriList, separator)
 	} else {
-		slist = make([]string, 0)
-		slist = append(slist, baseUriList)
+		slist = []string{baseUriList}
 	}
 
 	for _, sitem := range slist {
@@ -84,13 +83,19 @@ func ValidateUri(baseUri string, redirectUri string) error {
 	}
 
 	// ensure prefix matches are actually subpaths
-	requiredPrefix := strings.TrimRight(base.Path, "/") + "/"
+	requiredPrefix := base.Path
+	if !strings.HasSuffix(requiredPrefix, "/") {
+		// add a single / if missing
+		requiredPrefix += "/"
+	}
+
 	if !strings.HasPrefix(redirect.Path, requiredPrefix) {
 		return newUriValidationError("path is not a subpath", baseUri, redirectUri)
 	}
 
 	// ensure prefix matches don't contain path traversals
-	for _, s := range strings.Split(strings.TrimPrefix(redirect.Path, requiredPrefix), "/") {
+	postfix := strings.TrimPrefix(redirect.Path, requiredPrefix)
+	for _, s := range strings.Split(postfix, "/") {
 		if s == ".." {
 			return newUriValidationError("subpath cannot contain path traversal", baseUri, redirectUri)
 		}
@@ -102,13 +107,8 @@ func ValidateUri(baseUri string, redirectUri string) error {
 // Returns the first uri from an uri list
 func FirstUri(baseUriList string, separator string) string {
 	if separator != "" {
-		slist := strings.Split(baseUriList, separator)
-		if len(slist) > 0 {
-			return slist[0]
-		}
-	} else {
-		return baseUriList
+		// strings.Split always return an non empty array
+		return strings.Split(baseUriList, separator)[0]
 	}
-
-	return ""
+	return baseUriList
 }

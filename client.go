@@ -8,7 +8,7 @@ type Client interface {
 	// Client secret
 	GetSecret() string
 
-	// Base client uri
+	// One or more Base client uri separate by config.RedirectUriSeparator
 	GetRedirectUri() string
 
 	// Data to be passed to storage. Not used by the library.

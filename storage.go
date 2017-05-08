@@ -1,7 +1,5 @@
 package osin
 
-import ()
-
 // Storage interface
 type Storage interface {
 	// Clone the storage if needed. For example, using mgo, you can clone the session with session.Clone
