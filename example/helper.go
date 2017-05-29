@@ -33,7 +33,7 @@ func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.R
 
 func DownloadAccessToken(url string, auth *osin.BasicAuth, output map[string]interface{}) error {
 	// download access token
-	preq, err := http.NewRequest("GET", url, nil)
+	preq, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		return err
 	}
