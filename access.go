@@ -351,6 +351,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	}
 
 	if extraScopes(ret.AccessData.Scope, ret.Scope) {
+		w.ErrorStatusCode = http.StatusUnauthorized
 		w.SetError(E_ACCESS_DENIED, "")
 		w.InternalError = errors.New("the requested scope must not include any scope not originally granted by the resource owner")
 		return nil
@@ -525,6 +526,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 			w.Output["scope"] = ar.Scope
 		}
 	} else {
+		w.ErrorStatusCode = http.StatusUnauthorized
 		w.SetError(E_ACCESS_DENIED, "")
 	}
 }
