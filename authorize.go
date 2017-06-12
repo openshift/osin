@@ -266,6 +266,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 		}
 	} else {
 		// redirect with error
+		w.ErrorStatusCode = http.StatusUnauthorized
 		w.SetErrorState(E_ACCESS_DENIED, "", ar.State)
 	}
 }
