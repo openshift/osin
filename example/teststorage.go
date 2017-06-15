@@ -1,7 +1,6 @@
 package example
 
 import (
-	"errors"
 	"fmt"
 	"github.com/RangelReale/osin"
 )
@@ -42,7 +41,7 @@ func (s *TestStorage) GetClient(id string) (osin.Client, error) {
 	if c, ok := s.clients[id]; ok {
 		return c, nil
 	}
-	return nil, errors.New("Client not found")
+	return nil, osin.ErrNotFound
 }
 
 func (s *TestStorage) SetClient(id string, client osin.Client) error {
@@ -62,7 +61,7 @@ func (s *TestStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
 	if d, ok := s.authorize[code]; ok {
 		return d, nil
 	}
-	return nil, errors.New("Authorize not found")
+	return nil, osin.ErrNotFound
 }
 
 func (s *TestStorage) RemoveAuthorize(code string) error {
@@ -85,7 +84,7 @@ func (s *TestStorage) LoadAccess(code string) (*osin.AccessData, error) {
 	if d, ok := s.access[code]; ok {
 		return d, nil
 	}
-	return nil, errors.New("Access not found")
+	return nil, osin.ErrNotFound
 }
 
 func (s *TestStorage) RemoveAccess(code string) error {
@@ -99,7 +98,7 @@ func (s *TestStorage) LoadRefresh(code string) (*osin.AccessData, error) {
 	if d, ok := s.refresh[code]; ok {
 		return s.LoadAccess(d)
 	}
-	return nil, errors.New("Refresh not found")
+	return nil, osin.ErrNotFound
 }
 
 func (s *TestStorage) RemoveRefresh(code string) error {
