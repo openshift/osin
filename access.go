@@ -521,8 +521,8 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 		if ret.RefreshToken != "" {
 			w.Output["refresh_token"] = ret.RefreshToken
 		}
-		if ar.Scope != "" {
-			w.Output["scope"] = ar.Scope
+		if ret.Scope != "" {
+			w.Output["scope"] = ret.Scope
 		}
 	} else {
 		w.SetError(E_ACCESS_DENIED, "")
