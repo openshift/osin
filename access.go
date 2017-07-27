@@ -537,12 +537,12 @@ func (s Server) getClient(auth *BasicAuth, storage Storage, w *Response) Client 
 		return nil
 	}
 	if client == nil {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s", "client is nil")
+		s.setErrorAndLog(w, E_INVALID_CLIENT, nil, "get_client=%s", "client is nil")
 		return nil
 	}
 
 	if !CheckClientSecret(client, auth.Password) {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s, client_id=%v", "client check failed", client.GetId())
+		s.setErrorAndLog(w, E_INVALID_CLIENT, nil, "get_client=%s, client_id=%v", "client check failed", client.GetId())
 		return nil
 	}
 

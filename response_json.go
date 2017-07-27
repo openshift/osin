@@ -27,6 +27,11 @@ func OutputJSON(rs *Response, w http.ResponseWriter, r *http.Request) error {
 		if w.Header().Get("Content-Type") == "" {
 			w.Header().Set("Content-Type", "application/json")
 		}
+
+		if rs.ErrorId == E_INVALID_CLIENT && r.Header.Get("Authorization") != "" {
+			rs.StatusCode = http.StatusUnauthorized // as described here https://tools.ietf.org/html/rfc6749#section-5.2
+		}
+
 		w.WriteHeader(rs.StatusCode)
 
 		encoder := json.NewEncoder(w)
