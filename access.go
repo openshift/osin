@@ -263,8 +263,8 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 }
 
 func extraScopes(access_scopes, refresh_scopes string) bool {
-	access_scopes_list := strings.Split(access_scopes, ",")
-	refresh_scopes_list := strings.Split(refresh_scopes, ",")
+	access_scopes_list := strings.Split(access_scopes, " ")
+	refresh_scopes_list := strings.Split(refresh_scopes, " ")
 
 	access_map := make(map[string]int)
 
