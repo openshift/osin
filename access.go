@@ -3,6 +3,7 @@ package osin
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -130,6 +131,21 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 		w.SetError(E_INVALID_REQUEST, "")
 		w.InternalError = err
 		return nil
+	}
+
+	// for POST with JSON data in the body
+	if r.Body != nil && strings.ToLower(r.Header.Get("Content-Type")) == "application/json" {
+		var bodyValues map[string]string
+		defer r.Body.Close()
+		err = json.NewDecoder(r.Body).Decode(&bodyValues)
+		if err != nil {
+			w.SetError(E_INVALID_REQUEST, "")
+			w.InternalError = err
+			return nil
+		}
+		for k, v := range bodyValues {
+			r.Form.Set(k, v)
+		}
 	}
 
 	grantType := AccessRequestType(r.Form.Get("grant_type"))

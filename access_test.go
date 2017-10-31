@@ -1,8 +1,10 @@
 package osin
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
@@ -174,6 +176,49 @@ func TestAccessPassword(t *testing.T) {
 	req.Form.Set("password", "testing")
 	req.Form.Set("state", "a")
 	req.PostForm = make(url.Values)
+
+	if ar := server.HandleAccessRequest(resp, req); ar != nil {
+		ar.Authorized = ar.Username == "testing" && ar.Password == "testing"
+		server.FinishAccessRequest(resp, req, ar)
+	}
+
+	//fmt.Printf("%+v", resp)
+
+	if resp.IsError && resp.InternalError != nil {
+		t.Fatalf("Error in response: %s", resp.InternalError)
+	}
+
+	if resp.IsError {
+		t.Fatalf("Should not be an error")
+	}
+
+	if resp.Type != DATA {
+		t.Fatalf("Response should be data")
+	}
+
+	if d := resp.Output["access_token"]; d != "1" {
+		t.Fatalf("Unexpected access token: %s", d)
+	}
+
+	if d := resp.Output["refresh_token"]; d != "r1" {
+		t.Fatalf("Unexpected refresh token: %s", d)
+	}
+}
+
+func TestAccessPasswordJSONBody(t *testing.T) {
+	sconfig := NewServerConfig()
+	sconfig.AllowedAccessTypes = AllowedAccessType{PASSWORD}
+	server := NewServer(sconfig, NewTestingStorage())
+	server.AccessTokenGen = &TestingAccessTokenGen{}
+	resp := server.NewResponse()
+
+	reqBody := fmt.Sprintf(`{"grant_type": "%s", "username": "testing", "password": "testing", "scope": "all", "state": "a"}`, string(PASSWORD))
+	req, err := http.NewRequest("POST", "http://localhost:14000/appauth", strings.NewReader(reqBody))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth("1234", "aabbccdd")
 
 	if ar := server.HandleAccessRequest(resp, req); ar != nil {
 		ar.Authorized = ar.Username == "testing" && ar.Password == "testing"
