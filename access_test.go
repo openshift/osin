@@ -303,6 +303,35 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
+
+		if !w.IsError {
+			t.Error("No error in response")
+		}
+
+		if w.ErrorId != E_UNAUTHORIZED_CLIENT {
+			t.Errorf("Expected error %v, got %v", E_UNAUTHORIZED_CLIENT, w.ErrorId)
+		}
+	}
+
+	// Ensure nonexistent client fails
+	{
+		auth := &BasicAuth{
+			Username: "nonexistent",
+			Password: "nonexistent",
+		}
+		w := &Response{}
+		client := getClient(auth, storage, w)
+		if client != nil {
+			t.Errorf("Expected error, got client: %v", client)
+		}
+
+		if !w.IsError {
+			t.Error("No error in response")
+		}
+
+		if w.ErrorId != E_UNAUTHORIZED_CLIENT {
+			t.Errorf("Expected error %v, got %v", E_UNAUTHORIZED_CLIENT, w.ErrorId)
+		}
 	}
 
 	// Ensure good secret works
