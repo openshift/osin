@@ -535,6 +535,10 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 // storage. Sets an error on the response if auth fails or a server error occurs.
 func getClient(auth *BasicAuth, storage Storage, w *Response) Client {
 	client, err := storage.GetClient(auth.Username)
+	if err == ErrNotFound {
+		w.SetError(E_UNAUTHORIZED_CLIENT, "")
+		return nil
+	}
 	if err != nil {
 		w.SetError(E_SERVER_ERROR, "")
 		w.InternalError = err
