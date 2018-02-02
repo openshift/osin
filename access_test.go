@@ -291,6 +291,8 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 		RedirectUri: "http://www.example.com",
 	}
 	storage := &TestingStorage{clients: map[string]Client{myclient.Id: myclient}}
+	sconfig := NewServerConfig()
+	server := NewServer(sconfig, storage)
 
 	// Ensure bad secret fails
 	{
@@ -299,7 +301,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "invalidsecret",
 		}
 		w := &Response{}
-		client := getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -320,7 +322,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "nonexistent",
 		}
 		w := &Response{}
-		client := getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -341,7 +343,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "myclientsecret",
 		}
 		w := &Response{}
-		client := getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
 		}
@@ -370,6 +372,8 @@ func TestGetClientSecretMatcher(t *testing.T) {
 		RedirectUri: "http://www.example.com",
 	}
 	storage := &TestingStorage{clients: map[string]Client{myclient.Id: myclient}}
+	sconfig := NewServerConfig()
+	server := NewServer(sconfig, storage)
 
 	// Ensure bad secret fails, but does not panic (doesn't call GetSecret)
 	{
@@ -378,7 +382,7 @@ func TestGetClientSecretMatcher(t *testing.T) {
 			Password: "invalidsecret",
 		}
 		w := &Response{}
-		client := getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -391,7 +395,7 @@ func TestGetClientSecretMatcher(t *testing.T) {
 			Password: "myclientsecret",
 		}
 		w := &Response{}
-		client := getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
 		}
