@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -51,7 +52,20 @@ func CheckBasicAuth(r *http.Request) (*BasicAuth, error) {
 		return nil, errors.New("Invalid authorization message")
 	}
 
-	return &BasicAuth{Username: pair[0], Password: pair[1]}, nil
+	// Decode the client_id and client_secret pairs as per
+	// https://tools.ietf.org/html/rfc6749#section-2.3.1
+
+	username, err := url.QueryUnescape(pair[0])
+	if err != nil {
+		return nil, err
+	}
+
+	password, err := url.QueryUnescape(pair[1])
+	if err != nil {
+		return nil, err
+	}
+
+	return &BasicAuth{Username: username, Password: password}, nil
 }
 
 // Return "Bearer" token from request. The header has precedence over query string.
