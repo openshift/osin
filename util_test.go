@@ -7,9 +7,11 @@ import (
 )
 
 const (
-	badAuthValue        = "Digest XHHHHHHH"
-	goodAuthValue       = "Basic dGVzdDp0ZXN0"
-	goodBearerAuthValue = "Bearer BGFVTDUJDp0ZXN0"
+	badAuthValue           = "Digest XHHHHHHH"
+	badUsernameInAuthValue = "Basic dSUyc2VybmFtZTpwYXNzd29yZA==" // u%2sername:password
+	badPasswordInAuthValue = "Basic dXNlcm5hbWU6cGElMnN3b3Jk"     // username:pa%2sword
+	goodAuthValue          = "Basic Y2xpZW50K25hbWU6Y2xpZW50KyUyNGVjcmV0"
+	goodBearerAuthValue    = "Bearer BGFVTDUJDp0ZXN0"
 )
 
 func TestBasicAuth(t *testing.T) {
@@ -28,6 +30,22 @@ func TestBasicAuth(t *testing.T) {
 		return
 	}
 
+	// with invalid username
+	r.Header.Set("Authorization", badUsernameInAuthValue)
+	b, err = CheckBasicAuth(r)
+	if b != nil || err == nil {
+		t.Errorf("Validated invalid auth with bad username")
+		return
+	}
+
+	// with invalid username
+	r.Header.Set("Authorization", badPasswordInAuthValue)
+	b, err = CheckBasicAuth(r)
+	if b != nil || err == nil {
+		t.Errorf("Validated invalid auth with bad password")
+		return
+	}
+
 	// with valid header
 	r.Header.Set("Authorization", goodAuthValue)
 	b, err = CheckBasicAuth(r)
@@ -37,7 +55,7 @@ func TestBasicAuth(t *testing.T) {
 	}
 
 	// check extracted auth data
-	if b.Username != "test" || b.Password != "test" {
+	if b.Username != "client name" || b.Password != "client $ecret" {
 		t.Errorf("Error decoding basic auth")
 	}
 }
