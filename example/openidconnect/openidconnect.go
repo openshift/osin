@@ -16,8 +16,6 @@ import (
 
 	"github.com/RangelReale/osin"
 	"github.com/RangelReale/osin/example"
-
-	"gopkg.in/square/go-jose.v1"
 )
 
 var (

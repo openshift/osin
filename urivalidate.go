@@ -103,7 +103,7 @@ func ValidateUri(baseUri string, redirectUri string) (realRedirectUri string, er
 		return "", newUriValidationError("path prefix doesn't match", baseUri, redirectUri)
 	}
 
-	return redirect.String(),nil
+	return redirect.String(), nil
 }
 
 // Returns the first uri from an uri list

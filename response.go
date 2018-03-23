@@ -1,6 +1,7 @@
 package osin
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -44,7 +45,7 @@ func NewResponse(storage Storage) *Response {
 		Output:          make(ResponseData),
 		Headers:         make(http.Header),
 		IsError:         false,
-		Storage:         storage.Clone(),
+		Storage:         storage.Clone(context.TODO()),
 	}
 	r.Headers.Add(
 		"Cache-Control",
