@@ -1,6 +1,7 @@
 package osin
 
 import (
+	"context"
 	"strconv"
 	"time"
 )
@@ -62,14 +63,14 @@ func NewTestingStorage() *TestingStorage {
 	return r
 }
 
-func (s *TestingStorage) Clone() Storage {
+func (s *TestingStorage) Clone(ctx context.Context) Storage {
 	return s
 }
 
 func (s *TestingStorage) Close() {
 }
 
-func (s *TestingStorage) GetClient(id string) (Client, error) {
+func (s *TestingStorage) GetClient(ctx context.Context, id string) (Client, error) {
 	if c, ok := s.clients[id]; ok {
 		return c, nil
 	}
@@ -81,24 +82,24 @@ func (s *TestingStorage) SetClient(id string, client Client) error {
 	return nil
 }
 
-func (s *TestingStorage) SaveAuthorize(data *AuthorizeData) error {
+func (s *TestingStorage) SaveAuthorize(ctx context.Context, data *AuthorizeData) error {
 	s.authorize[data.Code] = data
 	return nil
 }
 
-func (s *TestingStorage) LoadAuthorize(code string) (*AuthorizeData, error) {
+func (s *TestingStorage) LoadAuthorize(ctx context.Context, code string) (*AuthorizeData, error) {
 	if d, ok := s.authorize[code]; ok {
 		return d, nil
 	}
 	return nil, ErrNotFound
 }
 
-func (s *TestingStorage) RemoveAuthorize(code string) error {
+func (s *TestingStorage) RemoveAuthorize(ctx context.Context, code string) error {
 	delete(s.authorize, code)
 	return nil
 }
 
-func (s *TestingStorage) SaveAccess(data *AccessData) error {
+func (s *TestingStorage) SaveAccess(ctx context.Context, data *AccessData) error {
 	s.access[data.AccessToken] = data
 	if data.RefreshToken != "" {
 		s.refresh[data.RefreshToken] = data.AccessToken
@@ -106,26 +107,26 @@ func (s *TestingStorage) SaveAccess(data *AccessData) error {
 	return nil
 }
 
-func (s *TestingStorage) LoadAccess(code string) (*AccessData, error) {
+func (s *TestingStorage) LoadAccess(ctx context.Context, code string) (*AccessData, error) {
 	if d, ok := s.access[code]; ok {
 		return d, nil
 	}
 	return nil, ErrNotFound
 }
 
-func (s *TestingStorage) RemoveAccess(code string) error {
+func (s *TestingStorage) RemoveAccess(ctx context.Context, code string) error {
 	delete(s.access, code)
 	return nil
 }
 
-func (s *TestingStorage) LoadRefresh(code string) (*AccessData, error) {
+func (s *TestingStorage) LoadRefresh(ctx context.Context, code string) (*AccessData, error) {
 	if d, ok := s.refresh[code]; ok {
-		return s.LoadAccess(d)
+		return s.LoadAccess(ctx, d)
 	}
 	return nil, ErrNotFound
 }
 
-func (s *TestingStorage) RemoveRefresh(code string) error {
+func (s *TestingStorage) RemoveRefresh(ctx context.Context, code string) error {
 	delete(s.refresh, code)
 	return nil
 }

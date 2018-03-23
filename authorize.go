@@ -105,7 +105,7 @@ type AuthorizeTokenGen interface {
 // authorization requests
 func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *AuthorizeRequest {
 	r.ParseForm()
-
+	ctx := r.Context()
 	// create the authorization request
 	unescapedUri, err := url.QueryUnescape(r.Form.Get("redirect_uri"))
 	if err != nil {
@@ -123,7 +123,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	}
 
 	// must have a valid client
-	ret.Client, err = w.Storage.GetClient(r.Form.Get("client_id"))
+	ret.Client, err = w.Storage.GetClient(ctx, r.Form.Get("client_id"))
 	if err == ErrNotFound {
 		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
 		return nil
@@ -205,6 +205,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 
 func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *AuthorizeRequest) {
 	// don't process if is already an error
+	ctx := r.Context()
 	if w.IsError {
 		return
 	}
@@ -258,7 +259,7 @@ func (s *Server) FinishAuthorizeRequest(w *Response, r *http.Request, ar *Author
 			ret.Code = code
 
 			// save authorization token
-			if err = w.Storage.SaveAuthorize(ret); err != nil {
+			if err = w.Storage.SaveAuthorize(ctx, ret); err != nil {
 				w.SetErrorState(E_SERVER_ERROR, "", ar.State)
 				w.InternalError = err
 				return

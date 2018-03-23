@@ -1,6 +1,7 @@
 package osin
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"testing"
@@ -79,7 +80,7 @@ func TestAccessRefreshToken(t *testing.T) {
 	}
 	//fmt.Printf("%+v", resp)
 
-	if _, err := server.Storage.LoadRefresh("r9999"); err == nil {
+	if _, err := server.Storage.LoadRefresh(req.Context(), "r9999"); err == nil {
 		t.Fatalf("token was not deleted")
 	}
 
@@ -130,7 +131,7 @@ func TestAccessRefreshTokenSaveToken(t *testing.T) {
 	}
 	//fmt.Printf("%+v", resp)
 
-	if _, err := server.Storage.LoadRefresh("r9999"); err != nil {
+	if _, err := server.Storage.LoadRefresh(req.Context(), "r9999"); err != nil {
 		t.Fatalf("token incorrectly deleted: %s", err.Error())
 	}
 
@@ -293,7 +294,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 	storage := &TestingStorage{clients: map[string]Client{myclient.Id: myclient}}
 	sconfig := NewServerConfig()
 	server := NewServer(sconfig, storage)
-
+	ctx := context.Background()
 	// Ensure bad secret fails
 	{
 		auth := &BasicAuth{
@@ -301,7 +302,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "invalidsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(ctx, auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -322,7 +323,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "nonexistent",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(ctx, auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -343,7 +344,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "myclientsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(ctx, auth, storage, w)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
 		}
@@ -374,7 +375,7 @@ func TestGetClientSecretMatcher(t *testing.T) {
 	storage := &TestingStorage{clients: map[string]Client{myclient.Id: myclient}}
 	sconfig := NewServerConfig()
 	server := NewServer(sconfig, storage)
-
+	ctx := context.Background()
 	// Ensure bad secret fails, but does not panic (doesn't call GetSecret)
 	{
 		auth := &BasicAuth{
@@ -382,7 +383,7 @@ func TestGetClientSecretMatcher(t *testing.T) {
 			Password: "invalidsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(ctx, auth, storage, w)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -395,7 +396,7 @@ func TestGetClientSecretMatcher(t *testing.T) {
 			Password: "myclientsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(ctx, auth, storage, w)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
 		}
@@ -437,12 +438,13 @@ func TestAccessAuthorizationCodePKCE(t *testing.T) {
 	}
 
 	for k, test := range testcases {
+		ctx := context.Background()
 		testStorage := NewTestingStorage()
 		sconfig := NewServerConfig()
 		sconfig.AllowedAccessTypes = AllowedAccessType{AUTHORIZATION_CODE}
 		server := NewServer(sconfig, testStorage)
 		server.AccessTokenGen = &TestingAccessTokenGen{}
-		server.Storage.SaveAuthorize(&AuthorizeData{
+		server.Storage.SaveAuthorize(ctx, &AuthorizeData{
 			Client:              testStorage.clients["public-client"],
 			Code:                "pkce-code",
 			ExpiresIn:           3600,

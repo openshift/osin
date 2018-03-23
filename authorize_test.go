@@ -227,7 +227,7 @@ func TestAuthorizeCodePKCEPlain(t *testing.T) {
 		t.Fatalf("Unexpected authorization code: %s", code)
 	}
 
-	token, err := server.Storage.LoadAuthorize(code)
+	token, err := server.Storage.LoadAuthorize(req.Context(), code)
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -283,7 +283,7 @@ func TestAuthorizeCodePKCES256(t *testing.T) {
 		t.Fatalf("Unexpected authorization code: %s", code)
 	}
 
-	token, err := server.Storage.LoadAuthorize(code)
+	token, err := server.Storage.LoadAuthorize(req.Context(), code)
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
