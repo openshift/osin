@@ -11,7 +11,7 @@ import (
 
 func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.Request) bool {
 	r.ParseForm()
-	if r.Method == "POST" && r.Form.Get("login") == "test" && r.Form.Get("password") == "test" {
+	if r.Method == "POST" && r.FormValue("login") == "test" && r.FormValue("password") == "test" {
 		return true
 	}
 

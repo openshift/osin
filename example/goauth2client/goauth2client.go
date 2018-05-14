@@ -86,7 +86,7 @@ func main() {
 	http.HandleFunc("/appauth/code", func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 
-		code := r.Form.Get("code")
+		code := r.FormValue("code")
 
 		w.Write([]byte("<html><body>"))
 		w.Write([]byte("APP AUTH - CODE<br/>"))
@@ -101,7 +101,7 @@ func main() {
 		var err error
 
 		// if parse, download and parse json
-		if r.Form.Get("doparse") == "1" {
+		if r.FormValue("doparse") == "1" {
 			jr, err = client.Exchange(oauth2.NoContext, code)
 			if err != nil {
 				jr = nil
