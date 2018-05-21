@@ -129,7 +129,7 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 		return nil
 	}
 
-	grantType := AccessRequestType(r.Form.Get("grant_type"))
+	grantType := AccessRequestType(r.FormValue("grant_type"))
 	if s.Config.AllowedAccessTypes.Exists(grantType) {
 		switch grantType {
 		case AUTHORIZATION_CODE:
@@ -159,9 +159,9 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	// generate access token
 	ret := &AccessRequest{
 		Type:            AUTHORIZATION_CODE,
-		Code:            r.Form.Get("code"),
-		CodeVerifier:    r.Form.Get("code_verifier"),
-		RedirectUri:     r.Form.Get("redirect_uri"),
+		Code:            r.FormValue("code"),
+		CodeVerifier:    r.FormValue("code_verifier"),
+		RedirectUri:     r.FormValue("redirect_uri"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
 		HttpRequest:     r,
@@ -291,8 +291,8 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	// generate access token
 	ret := &AccessRequest{
 		Type:            REFRESH_TOKEN,
-		Code:            r.Form.Get("refresh_token"),
-		Scope:           r.Form.Get("scope"),
+		Code:            r.FormValue("refresh_token"),
+		Scope:           r.FormValue("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
 		HttpRequest:     r,
@@ -362,9 +362,9 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	// generate access token
 	ret := &AccessRequest{
 		Type:            PASSWORD,
-		Username:        r.Form.Get("username"),
-		Password:        r.Form.Get("password"),
-		Scope:           r.Form.Get("scope"),
+		Username:        r.FormValue("username"),
+		Password:        r.FormValue("password"),
+		Scope:           r.FormValue("scope"),
 		GenerateRefresh: true,
 		Expiration:      s.Config.AccessExpiration,
 		HttpRequest:     r,
@@ -397,7 +397,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 	// generate access token
 	ret := &AccessRequest{
 		Type:            CLIENT_CREDENTIALS,
-		Scope:           r.Form.Get("scope"),
+		Scope:           r.FormValue("scope"),
 		GenerateRefresh: false,
 		Expiration:      s.Config.AccessExpiration,
 		HttpRequest:     r,
@@ -424,9 +424,9 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 	// generate access token
 	ret := &AccessRequest{
 		Type:            ASSERTION,
-		Scope:           r.Form.Get("scope"),
-		AssertionType:   r.Form.Get("assertion_type"),
-		Assertion:       r.Form.Get("assertion"),
+		Scope:           r.FormValue("scope"),
+		AssertionType:   r.FormValue("assertion_type"),
+		Assertion:       r.FormValue("assertion"),
 		GenerateRefresh: false, // assertion should NOT generate a refresh token, per the RFC
 		Expiration:      s.Config.AccessExpiration,
 		HttpRequest:     r,
@@ -454,7 +454,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 	if w.IsError {
 		return
 	}
-	redirectUri := r.Form.Get("redirect_uri")
+	redirectUri := r.FormValue("redirect_uri")
 	// Get redirect uri from AccessRequest if it's there (e.g., refresh token request)
 	if ar.RedirectUri != "" {
 		redirectUri = ar.RedirectUri

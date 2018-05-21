@@ -103,7 +103,7 @@ func main() {
 	http.HandleFunc("/appauth/code", func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 
-		code := r.Form.Get("code")
+		code := r.FormValue("code")
 
 		w.Write([]byte("<html><body>"))
 		w.Write([]byte("APP AUTH - CODE<br/>"))
@@ -121,7 +121,7 @@ func main() {
 			url.QueryEscape("http://localhost:14000/appauth/code"), url.QueryEscape(code))
 
 		// if parse, download and parse json
-		if r.Form.Get("doparse") == "1" {
+		if r.FormValue("doparse") == "1" {
 			err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
 				&osin.BasicAuth{"1234", "aabbccdd"}, jr)
 			if err != nil {
@@ -318,7 +318,7 @@ func main() {
 		w.Write([]byte("APP AUTH - REFRESH<br/>"))
 		defer w.Write([]byte("</body></html>"))
 
-		code := r.Form.Get("code")
+		code := r.FormValue("code")
 
 		if code == "" {
 			w.Write([]byte("Nothing to do"))
@@ -369,7 +369,7 @@ func main() {
 		w.Write([]byte("APP AUTH - INFO<br/>"))
 		defer w.Write([]byte("</body></html>"))
 
-		code := r.Form.Get("code")
+		code := r.FormValue("code")
 
 		if code == "" {
 			w.Write([]byte("Nothing to do"))
