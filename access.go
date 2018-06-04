@@ -494,15 +494,27 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 
 		// remove authorization token
 		if ret.AuthorizeData != nil {
-			w.Storage.RemoveAuthorize(ret.AuthorizeData.Code)
+			err = w.Storage.RemoveAuthorize(ret.AuthorizeData.Code)
+			if err != nil {
+				s.setErrorAndLog(w, E_SERVER_ERROR, err, "finish_access_request=%s", "error removing authorize token")
+				return
+			}
 		}
 
 		// remove previous access token
 		if ret.AccessData != nil && !s.Config.RetainTokenAfterRefresh {
 			if ret.AccessData.RefreshToken != "" {
-				w.Storage.RemoveRefresh(ret.AccessData.RefreshToken)
+				err = w.Storage.RemoveRefresh(ret.AccessData.RefreshToken)
+				if err != nil {
+					s.setErrorAndLog(w, E_SERVER_ERROR, err, "finish_access_request=%s", "error removing refresh token")
+					return
+				}
 			}
-			w.Storage.RemoveAccess(ret.AccessData.AccessToken)
+			err = w.Storage.RemoveAccess(ret.AccessData.AccessToken)
+			if err != nil {
+				s.setErrorAndLog(w, E_SERVER_ERROR, err, "finish_access_request=%s", "error removing access token")
+				return
+			}
 		}
 
 		// output data
