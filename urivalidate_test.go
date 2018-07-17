@@ -10,14 +10,17 @@ func TestURIValidate(t *testing.T) {
 			// Exact match
 			"http://localhost:14000/appauth",
 			"http://localhost:14000/appauth",
+			"http://localhost:14000/appauth",
 		},
 		{
 			// Trailing slash
 			"http://www.google.com/myapp",
 			"http://www.google.com/myapp/",
+			"http://www.google.com/myapp/",
 		},
 		{
 			// Exact match with trailing slash
+			"http://www.google.com/myapp/",
 			"http://www.google.com/myapp/",
 			"http://www.google.com/myapp/",
 		},
@@ -25,26 +28,44 @@ func TestURIValidate(t *testing.T) {
 			// Subpath
 			"http://www.google.com/myapp",
 			"http://www.google.com/myapp/interface/implementation",
+			"http://www.google.com/myapp/interface/implementation",
 		},
 		{
 			// Subpath with trailing slash
 			"http://www.google.com/myapp/",
+			"http://www.google.com/myapp/interface/implementation",
 			"http://www.google.com/myapp/interface/implementation",
 		},
 		{
 			// Subpath with things that are close to path traversals, but aren't
 			"http://www.google.com/myapp",
 			"http://www.google.com/myapp/.../..implementation../...",
+			"http://www.google.com/myapp/.../..implementation../...",
 		},
 		{
 			// If the allowed basepath contains path traversals, allow them?
 			"http://www.google.com/traversal/../allowed",
 			"http://www.google.com/traversal/../allowed/with/subpath",
+			"http://www.google.com/allowed/with/subpath",
+		},
+		{
+			// Backslashes
+			"https://mysafewebsite.com/secure/redirect",
+			"https://mysafewebsite.com/secure/redirect/\\../\\../\\../evil",
+			"https://mysafewebsite.com/secure/redirect/%5C../%5C../%5C../evil",
+		},
+		{
+			// Backslashes
+			"https://mysafewebsite.com/secure/redirect",
+			"https://mysafewebsite.com/secure/redirect/\\..\\../\\../evil",
+			"https://mysafewebsite.com/secure/redirect/%5C..%5C../%5C../evil",
 		},
 	}
 	for _, v := range valid {
-		if err := ValidateUri(v[0], v[1]); err != nil {
+		if realRedirectUri, err := ValidateUri(v[0], v[1]); err != nil {
 			t.Errorf("Expected ValidateUri(%s, %s) to succeed, got %v", v[0], v[1], err)
+		} else if len(v) == 3 && realRedirectUri != v[2] {
+			t.Errorf("Expected ValidateUri(%s, %s) to return uri %s, got %s", v[0], v[1], v[2], realRedirectUri)
 		}
 	}
 
@@ -89,9 +110,14 @@ func TestURIValidate(t *testing.T) {
 			"http://www.google.com/myapp",
 			"http://www.google.com/myapp../test",
 		},
+		{
+			// Backslashes
+			"https://mysafewebsite.com/secure/redirect",
+			"https://mysafewebsite.com/secure%2fredirect/../evil",
+		},
 	}
 	for _, v := range invalid {
-		if err := ValidateUri(v[0], v[1]); err == nil {
+		if _, err := ValidateUri(v[0], v[1]); err == nil {
 			t.Errorf("Expected ValidateUri(%s, %s) to fail", v[0], v[1])
 		}
 	}
@@ -99,22 +125,22 @@ func TestURIValidate(t *testing.T) {
 
 func TestURIListValidate(t *testing.T) {
 	// V1
-	if err := ValidateUriList("http://localhost:14000/appauth", "http://localhost:14000/appauth", ""); err != nil {
+	if _, err := ValidateUriList("http://localhost:14000/appauth", "http://localhost:14000/appauth", ""); err != nil {
 		t.Errorf("V1: %s", err)
 	}
 
 	// V2
-	if err := ValidateUriList("http://localhost:14000/appauth", "http://localhost:14000/app", ""); err == nil {
+	if _, err := ValidateUriList("http://localhost:14000/appauth", "http://localhost:14000/app", ""); err == nil {
 		t.Error("V2 should have failed")
 	}
 
 	// V3
-	if err := ValidateUriList("http://xxx:14000/appauth;http://localhost:14000/appauth", "http://localhost:14000/appauth", ";"); err != nil {
+	if _, err := ValidateUriList("http://xxx:14000/appauth;http://localhost:14000/appauth", "http://localhost:14000/appauth", ";"); err != nil {
 		t.Errorf("V3: %s", err)
 	}
 
 	// V4
-	if err := ValidateUriList("http://xxx:14000/appauth;http://localhost:14000/appauth", "http://localhost:14000/app", ";"); err == nil {
+	if _, err := ValidateUriList("http://xxx:14000/appauth;http://localhost:14000/appauth", "http://localhost:14000/app", ";"); err == nil {
 		t.Error("V4 should have failed")
 	}
 }
