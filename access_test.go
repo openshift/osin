@@ -258,11 +258,11 @@ func TestExtraScopes(t *testing.T) {
 		t.Fatalf("extraScopes returned true with less scopes")
 	}
 
-	if extraScopes("a,b", "b,a") == true {
+	if extraScopes("a b", "b a") == true {
 		t.Fatalf("extraScopes returned true with matching scopes")
 	}
 
-	if extraScopes("a,b", "b,a,c") == false {
+	if extraScopes("a b", "b a c") == false {
 		t.Fatalf("extraScopes returned false with extra scopes")
 	}
 
