@@ -60,6 +60,12 @@ func TestURIValidate(t *testing.T) {
 			"https://mysafewebsite.com/secure/redirect/\\..\\../\\../evil",
 			"https://mysafewebsite.com/secure/redirect/%5C..%5C../%5C../evil",
 		},
+		{
+			// Query string must be kept
+			"http://www.google.com/myapp/redir",
+			"http://www.google.com/myapp/redir?a=1&b=2",
+			"http://www.google.com/myapp/redir?a=1&b=2",
+		},
 	}
 	for _, v := range valid {
 		if realRedirectUri, err := ValidateUri(v[0], v[1]); err != nil {
