@@ -388,6 +388,19 @@ func TestGetClientSecretMatcher(t *testing.T) {
 		}
 	}
 
+	// Ensure bad secret fails, but does not panic (doesn't call GetSecret)
+	{
+		auth := &BasicAuth{
+			Username: "myclient",
+			Password: "invalidsecret",
+		}
+		w := &Response{}
+		client := server.getClient(auth, storage, w, true)
+		if client != nil {
+			t.Errorf("Expected error, got client: %v", client)
+		}
+	}
+
 	// Ensure good secret works, but does not panic (doesn't call GetSecret)
 	{
 		auth := &BasicAuth{

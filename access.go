@@ -174,7 +174,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	}
 
 	// must have a valid client
-	if ret.Client = s.getClient(auth, w.Storage, w, false); ret.Client == nil {
+	if ret.Client = s.getClient(auth, w.Storage, w, true); ret.Client == nil {
 		return nil
 	}
 
@@ -541,7 +541,10 @@ func (s Server) getClient(auth *BasicAuth, storage Storage, w *Response, allowEm
 		return nil
 	}
 
-	if !allowEmptySecret && !CheckClientSecret(client, auth.Password) {
+	if auth.Password != "" && !CheckClientSecret(client, auth.Password) {
+		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s, client_id=%v", "client check failed", client.GetId())
+		return nil
+	} else if auth.Password == "" && !allowEmptySecret {
 		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s, client_id=%v", "client check failed", client.GetId())
 		return nil
 	}
