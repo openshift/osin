@@ -301,7 +301,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "invalidsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w, false)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -322,7 +322,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "nonexistent",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w, false)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -343,7 +343,7 @@ func TestGetClientWithoutMatcher(t *testing.T) {
 			Password: "myclientsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w, false)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
 		}
@@ -382,7 +382,7 @@ func TestGetClientSecretMatcher(t *testing.T) {
 			Password: "invalidsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w, false)
 		if client != nil {
 			t.Errorf("Expected error, got client: %v", client)
 		}
@@ -395,7 +395,20 @@ func TestGetClientSecretMatcher(t *testing.T) {
 			Password: "myclientsecret",
 		}
 		w := &Response{}
-		client := server.getClient(auth, storage, w)
+		client := server.getClient(auth, storage, w, false)
+		if client != myclient {
+			t.Errorf("Expected client, got nil with response: %v", w)
+		}
+	}
+
+	// Ensure good secret works, but does not panic (doesn't call GetSecret)
+	{
+		auth := &BasicAuth{
+			Username: "myclient",
+			Password: "",
+		}
+		w := &Response{}
+		client := server.getClient(auth, storage, w, true)
 		if client != myclient {
 			t.Errorf("Expected client, got nil with response: %v", w)
 		}

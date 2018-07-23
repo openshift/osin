@@ -174,7 +174,7 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	}
 
 	// must have a valid client
-	if ret.Client = s.getClient(auth, w.Storage, w); ret.Client == nil {
+	if ret.Client = s.getClient(auth, w.Storage, w, false); ret.Client == nil {
 		return nil
 	}
 
@@ -307,7 +307,7 @@ func (s *Server) handleRefreshTokenRequest(w *Response, r *http.Request) *Access
 	}
 
 	// must have a valid client
-	if ret.Client = s.getClient(auth, w.Storage, w); ret.Client == nil {
+	if ret.Client = s.getClient(auth, w.Storage, w, false); ret.Client == nil {
 		return nil
 	}
 
@@ -379,7 +379,7 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	}
 
 	// must have a valid client
-	if ret.Client = s.getClient(auth, w.Storage, w); ret.Client == nil {
+	if ret.Client = s.getClient(auth, w.Storage, w, true); ret.Client == nil {
 		return nil
 	}
 
@@ -406,7 +406,7 @@ func (s *Server) handleClientCredentialsRequest(w *Response, r *http.Request) *A
 	}
 
 	// must have a valid client
-	if ret.Client = s.getClient(auth, w.Storage, w); ret.Client == nil {
+	if ret.Client = s.getClient(auth, w.Storage, w, false); ret.Client == nil {
 		return nil
 	}
 
@@ -441,7 +441,7 @@ func (s *Server) handleAssertionRequest(w *Response, r *http.Request) *AccessReq
 	}
 
 	// must have a valid client
-	if ret.Client = s.getClient(auth, w.Storage, w); ret.Client == nil {
+	if ret.Client = s.getClient(auth, w.Storage, w, false); ret.Client == nil {
 		return nil
 	}
 
@@ -526,7 +526,7 @@ func (s *Server) FinishAccessRequest(w *Response, r *http.Request, ar *AccessReq
 
 // getClient looks up and authenticates the basic auth using the given
 // storage. Sets an error on the response if auth fails or a server error occurs.
-func (s Server) getClient(auth *BasicAuth, storage Storage, w *Response) Client {
+func (s Server) getClient(auth *BasicAuth, storage Storage, w *Response, allowEmptySecret bool) Client {
 	client, err := storage.GetClient(auth.Username)
 	if err == ErrNotFound {
 		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s", "not found")
@@ -541,7 +541,7 @@ func (s Server) getClient(auth *BasicAuth, storage Storage, w *Response) Client 
 		return nil
 	}
 
-	if !CheckClientSecret(client, auth.Password) {
+	if !allowEmptySecret && !CheckClientSecret(client, auth.Password) {
 		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "get_client=%s, client_id=%v", "client check failed", client.GetId())
 		return nil
 	}
