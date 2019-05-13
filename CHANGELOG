@@ -1,3 +1,8 @@
+2019-05-13
+==========
+* NON-BREAKING CHANGES
+  - Updated imports in examples to use github.com/openshift/osin instead of github.com/RangelReale/osin
+
 2014-06-25
 ==========
 * BREAKING CHANGES:
