@@ -1,7 +1,7 @@
 OSIN
 ====
 
-[![GoDoc](https://godoc.org/github.com/RangelReale/osin?status.svg)](https://godoc.org/github.com/RangelReale/osin)
+[![GoDoc](https://godoc.org/github.com/openshift/osin?status.svg)](https://godoc.org/github.com/openshift/osin)
 
 
 Golang OAuth2 server library
@@ -21,8 +21,8 @@ The library implements the majority of the specification, like authorization and
 
 ````go
 import (
-	"github.com/RangelReale/osin"
-	ex "github.com/RangelReale/osin/example" 
+	"github.com/openshift/osin"
+	ex "github.com/openshift/osin/example"
 )
 
 // ex.NewTestStorage implements the "osin.Storage" interface
@@ -90,6 +90,10 @@ Rangel Reale
 rangelreale@gmail.com
 
 ### Changes
+2019-05-13
+==========
+* NON-BREAKING CHANGES
+  - Updated imports in examples to use github.com/openshift/osin instead of github.com/RangelReale/osin
 
 2014-06-25
 ==========
