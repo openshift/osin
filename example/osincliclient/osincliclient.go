@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/openshift/osin"
 	"github.com/openshift/example"
-	"github.com/openshiftcli"
+	"github.com/openshift/osincli"
 	"net/http"
 )
 
