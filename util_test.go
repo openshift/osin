@@ -85,14 +85,14 @@ func TestGetClientAuth(t *testing.T) {
 		{headerNoAuth, urlWithSecret, false, false},
 		{headerNoAuth, urlWithEmptySecret, true, true},
 		{headerNoAuth, urlWithEmptySecret, false, false},
-		{headerNoAuth, urlNoSecret, true, false},
+		{headerNoAuth, urlNoSecret, true, true},
 		{headerNoAuth, urlNoSecret, false, false},
 
 		{headerBadAuth, urlWithSecret, true, true},
 		{headerBadAuth, urlWithSecret, false, false},
 		{headerBadAuth, urlWithEmptySecret, true, true},
 		{headerBadAuth, urlWithEmptySecret, false, false},
-		{headerBadAuth, urlNoSecret, true, false},
+		{headerBadAuth, urlNoSecret, true, true},
 		{headerBadAuth, urlNoSecret, false, false},
 
 		{headerOKAuth, urlWithSecret, true, true},
@@ -103,15 +103,15 @@ func TestGetClientAuth(t *testing.T) {
 		{headerOKAuth, urlNoSecret, false, true},
 	}
 
-	for _, tt := range tests {
+	for testIdx, tt := range tests {
 		w := new(Response)
 		r := &http.Request{Header: tt.header, URL: tt.url}
 		r.ParseForm()
 		auth := server.getClientAuth(w, r, tt.allowQueryParams)
 		if tt.expectAuth && auth == nil {
-			t.Errorf("Auth should not be nil for %v", tt)
+			t.Errorf("Auth should not be nil for %v [test %d]", tt, testIdx)
 		} else if !tt.expectAuth && auth != nil {
-			t.Errorf("Auth should be nil for %v", tt)
+			t.Errorf("Auth should be nil for %v [test %d]", tt, testIdx)
 		}
 	}
 
