@@ -127,7 +127,7 @@ func TestAuthorizeTokenWithInvalidClient(t *testing.T) {
 	}
 }
 
-func TestAuthorizeCodePKCERequired(t *testing.T) {
+func TestAuthorizeCodePKCERequiredForPublic(t *testing.T) {
 	sconfig := NewServerConfig()
 	sconfig.RequirePKCEForPublicClients = true
 	sconfig.AllowedAuthorizeTypes = AllowedAuthorizeType{CODE}
@@ -180,6 +180,54 @@ func TestAuthorizeCodePKCERequired(t *testing.T) {
 		}
 		if d := resp.Output["code"]; d != "1" {
 			t.Fatalf("Unexpected authorization code: %s", d)
+		}
+	}
+}
+
+func TestAuthorizeCodePKCERequiredForAll(t *testing.T) {
+	sconfig := NewServerConfig()
+	sconfig.RequirePKCEForAllClients = true
+	sconfig.AllowedAuthorizeTypes = AllowedAuthorizeType{CODE}
+	server := NewServer(sconfig, NewTestingStorage())
+	server.AuthorizeTokenGen = &TestingAuthorizeTokenGen{}
+
+	// Public client returns an error
+	{
+		resp := server.NewResponse()
+		req, err := http.NewRequest("GET", "http://localhost:14000/appauth", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Form = make(url.Values)
+		req.Form.Set("response_type", string(CODE))
+		req.Form.Set("state", "a")
+		req.Form.Set("client_id", "public-client")
+		if ar := server.HandleAuthorizeRequest(resp, req); ar != nil {
+			ar.Authorized = true
+			server.FinishAuthorizeRequest(resp, req, ar)
+		}
+		if !resp.IsError || resp.ErrorId != "invalid_request" || strings.Contains(resp.StatusText, "code_challenge") {
+			t.Errorf("Expected invalid_request error describing the code_challenge required, got %#v", resp)
+		}
+	}
+
+	// Confidential client works without PKCE
+	{
+		resp := server.NewResponse()
+		req, err := http.NewRequest("GET", "http://localhost:14000/appauth", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Form = make(url.Values)
+		req.Form.Set("response_type", string(CODE))
+		req.Form.Set("state", "a")
+		req.Form.Set("client_id", "1234")
+		if ar := server.HandleAuthorizeRequest(resp, req); ar != nil {
+			ar.Authorized = true
+			server.FinishAuthorizeRequest(resp, req, ar)
+		}
+		if !resp.IsError || resp.ErrorId != "invalid_request" || strings.Contains(resp.StatusText, "code_challenge") {
+			t.Errorf("Expected invalid_request error describing the code_challenge required, got %#v", resp)
 		}
 	}
 }

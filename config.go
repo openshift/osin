@@ -57,6 +57,9 @@ type ServerConfig struct {
 	// Require PKCE for code flows for public OAuth clients - default false
 	RequirePKCEForPublicClients bool
 
+	// Require PKCE for code flows for all OAuth clients - default false
+	RequirePKCEForAllClients bool
+
 	// Separator to support multiple URIs in Client.GetRedirectUri().
 	// If blank (the default), don't allow multiple URIs.
 	RedirectUriSeparator string

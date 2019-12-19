@@ -172,6 +172,11 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 					w.SetErrorState(E_INVALID_REQUEST, "code_challenge (rfc7636) required for public clients", ret.State)
 					return nil
 				}
+				if s.Config.RequirePKCEForAllClients {
+					// https://tools.ietf.org/html/rfc7636#section-4.4.1
+					w.SetErrorState(E_INVALID_REQUEST, "code_challenge (rfc7636) required", ret.State)
+					return nil
+				}
 			} else {
 				codeChallengeMethod := r.FormValue("code_challenge_method")
 				// allowed values are "plain" (default) and "S256", per https://tools.ietf.org/html/rfc7636#section-4.3
