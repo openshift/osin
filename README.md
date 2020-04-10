@@ -72,7 +72,7 @@ There is a mock available at [example/teststorage.go](/example/teststorage.go) w
 
 You might want to check out other implementations for common database management systems as well:
 
-* [PostgreSQL](https://github.com/ory-am/osin-storage)
+* [PostgreSQL](https://github.com/anaxilaus/osin-postgres)
 * [MongoDB](https://github.com/martint17r/osin-mongo-storage)
 * [RethinkDB](https://github.com/ahmet/osin-rethinkdb)
 * [DynamoDB](https://github.com/uniplaces/osin-dynamodb)
