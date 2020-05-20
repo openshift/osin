@@ -1,6 +1,7 @@
 package osin
 
 import (
+	"crypto/subtle"
 	"encoding/base64"
 	"errors"
 	"net/http"
@@ -28,7 +29,7 @@ func CheckClientSecret(client Client, secret string) bool {
 		return client.ClientSecretMatches(secret)
 	default:
 		// Fallback to the less secure method of extracting the plain text secret from the client for comparison
-		return client.GetSecret() == secret
+		return subtle.ConstantTimeCompare([]byte(client.GetSecret()), []byte(secret)) == 1
 	}
 }
 
