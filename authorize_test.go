@@ -9,7 +9,7 @@ import (
 
 func TestAuthorizeCode(t *testing.T) {
 	sconfig := NewServerConfig()
-	sconfig.AllowedAuthorizeTypes = AllowedAuthorizeType{CODE}
+	sconfig.AllowedAuthorizeTypes = AllowedAuthorizeType{CODE, ID_TOKEN, TOKEN}
 	server := NewServer(sconfig, NewTestingStorage())
 	server.AuthorizeTokenGen = &TestingAuthorizeTokenGen{}
 	resp := server.NewResponse()
@@ -19,16 +19,18 @@ func TestAuthorizeCode(t *testing.T) {
 		t.Fatal(err)
 	}
 	req.Form = make(url.Values)
-	req.Form.Set("response_type", string(CODE))
+	req.Form.Set("response_type", string(TOKEN)+" "+string(CODE)+" "+string(ID_TOKEN))
 	req.Form.Set("client_id", "1234")
 	req.Form.Set("state", "a")
+	req.Form.Set("scope", "openid")
+	req.Form.Set("nonce", "xx")
 
 	if ar := server.HandleAuthorizeRequest(resp, req); ar != nil {
 		ar.Authorized = true
 		server.FinishAuthorizeRequest(resp, req, ar)
 	}
 
-	//fmt.Printf("%+v", resp)
+	// fmt.Printf("%+v\n", resp)
 
 	if resp.IsError && resp.InternalError != nil {
 		t.Fatalf("Error in response: %s", resp.InternalError)

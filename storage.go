@@ -1,6 +1,7 @@
 package osin
 
 import (
+	"crypto"
 	"errors"
 )
 
@@ -25,6 +26,9 @@ type Storage interface {
 
 	// GetClient loads the client by id (client_id)
 	GetClient(id string) (Client, error)
+
+	// GetPrivateKey loads the client private key
+	GetPrivateKey(clientID string) (crypto.Signer, error)
 
 	// SaveAuthorize saves authorize data.
 	SaveAuthorize(*AuthorizeData) error

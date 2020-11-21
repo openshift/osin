@@ -1,9 +1,53 @@
 package osin
 
 import (
+	"crypto"
+	"crypto/x509"
+	"encoding/pem"
 	"strconv"
 	"time"
 )
+
+// private key for sign
+var privateKey crypto.Signer
+
+func init() {
+	b, _ := pem.Decode([]byte(`-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAtLKRTGNsMNUvTIwOat4GN41txOThVW6Y0hICnhombWMPMWpq
+rfduK1pT0MlGG8mrP6VEdj7eJxMvOn5RJtwlLJjYyHBG/cC1a5JROd2jvS983r2+
+FbObMCMurdK3QAI7WwjwWXVqFKxg+HZhcp+ENsP4jE/EYn8AicKwptvKSk/xbxRd
+KloQc7LOrjhpA6dUwvLVzJ9V545CTTWmyILlk7UCK7ezrGYwExnebCydX9jJBpFi
+en2YGPB6Wovs7+pc6hHBjYNCLQGsB4EMoed/fk+MWl4mokv0jNWui9uZErV2i4mU
++0noXBWrH7QPHr8mEA5LWpS3FS01CsSF5ueU6QIDAQABAoIBADrWmnFhPm14PXqT
+cG5j9WpJZyDh1m3XIXPl4WxR34lm5B+XIz2agAkl1Hz7zRRnSpfi3LQULIpUuOA3
+GX2p2YD4FD7QMI2YHnr0nfZVsWd8+xAcgLTYUwQNsLlxD7KMB3/RHVJD5VLt/nVp
+Nrn4LzkV/uzRXIUmDarN9m+eyfQAH9gZGpNIG4pSbLlHsiljxmnGG5I2If/DSRq2
+BNDAjPrmzmhOaZEgz0DM/Ng6LnFASLuG3uQHlUTDJZedCDN88kO8zm9SRyX9VKDX
+hi77ow2Cg2EI+gpvW4q+mgwy84Gj19JAZeAbpuF7a6PY2UIuf+wWp47F379XjApa
+e4BwMgECgYEAz1l2eBU3GPun0KIK4zULlbG3ZNOfPU3NSO5jtVxFyvdaPZ6Qa9gE
+PoNbpMSdkgs+0rPokC7ZDs4frR9Rl7x8ezivl70nCnBy5i53axZGp+Q3JjcGOH6Z
+e9Em5xm47lOofPlPwk2Uq9BtF9Fqo9k+skAL+G4kL/fNjfPT5vPH3xkCgYEA3xg+
+nNABiQa6DZknGXGjYNqqwBiaIByLpwERYonH86dMNm4xeppvqakfzpXdLgfK7lwR
+vFTfyD6TEJG2nb970wBUdigRebZ1NqJtyZU0FXDbfs7KJUgBSYnlhT2tAuM9OvMa
+3wEu/JFjm4UgtuhRWpbgQkFzqiETsyi2S/8frlECgYAtqSXNi952QfTSnNyI7EWA
+0YHxUije9yMdzGForskvyQi2SRTEqu1EVuj3f9SzNIbBH503IxnpiLqxBRSStY80
+E2eXoq/WPK0Qw2rIyj8E+dyrLbLQ/hAOlCBdA+0Vjpar7rsBrtPugheEBznUmyKT
+XkdEjfyqE4fQmsEvOr/pAQKBgQChMcpj0aOaV4LtOmDW8JYE8Fp5zAzo8NczBwGB
+ul4APjxCA+K6XIYcB3hU81HJ5ZWKHnouIwFClXv7d92EI4wbjFx6tz7RO7V7kWdU
+RPtKFq5x9IZ444sSkJGHcWXl9T0Tr/4Vbax+j6px/4IAxuGpW+ST2ujw3091nxAA
+30kL0QKBgEQfbj/A/rVk+2yWp2IwcuG0Zg8NIMw2ISUh5IkmYycTx/3ocTMsM3Q+
+urGXvgf1FCQIT+QgypS2iFDQmWOv6im0UbSC7ej0rKuKPT8rI1th+Uz2Jb0HU3Sm
+aZK39t4ulCEBr9fACkY3I6X9JLyR27Fg2ymnyh5pnyOYCQsADvJR
+-----END RSA PRIVATE KEY-----`))
+	if b == nil {
+		panic("invalid private key content")
+	}
+	var err error
+	privateKey, err = x509.ParsePKCS1PrivateKey(b.Bytes)
+	if err != nil {
+		panic(err)
+	}
+}
 
 type TestingStorage struct {
 	clients   map[string]Client
@@ -79,6 +123,11 @@ func (s *TestingStorage) GetClient(id string) (Client, error) {
 func (s *TestingStorage) SetClient(id string, client Client) error {
 	s.clients[id] = client
 	return nil
+}
+
+func (s *TestingStorage) GetPrivateKey(clientID string) (crypto.Signer, error) {
+	// ignore clientID
+	return privateKey, nil
 }
 
 func (s *TestingStorage) SaveAuthorize(data *AuthorizeData) error {
