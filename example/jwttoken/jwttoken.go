@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/RangelReale/osin"
-	"github.com/RangelReale/osin/example"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/openshift/osin"
+	"github.com/openshift/osin/example"
 )
 
 // JWT access token generator
