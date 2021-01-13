@@ -1,5 +1,7 @@
 package osin
 
+import "crypto/subtle"
+
 // Client information
 type Client interface {
 	// Client id
@@ -49,7 +51,7 @@ func (d *DefaultClient) GetUserData() interface{} {
 
 // Implement the ClientSecretMatcher interface
 func (d *DefaultClient) ClientSecretMatches(secret string) bool {
-	return d.Secret == secret
+	return subtle.ConstantTimeCompare([]byte(d.Secret), []byte(secret)) == 1
 }
 
 func (d *DefaultClient) CopyFrom(client Client) {

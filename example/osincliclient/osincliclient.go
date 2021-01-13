@@ -1,14 +1,14 @@
 package main
 
-// Use github.com/RangelReale/osincli client to test
+// Use github.com/openshift/osincli client to test
 // Open url in browser:
 // http://localhost:14001
 
 import (
 	"fmt"
-	"github.com/RangelReale/osin"
-	"github.com/RangelReale/osin/example"
-	"github.com/RangelReale/osincli"
+	"github.com/openshift/osin"
+	"github.com/openshift/osin/example"
+	"github.com/openshift/osincli"
 	"net/http"
 )
 
