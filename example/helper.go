@@ -46,6 +46,7 @@ func DownloadAccessToken(url string, auth *osin.BasicAuth, output map[string]int
 	if err != nil {
 		return err
 	}
+	defer presp.Body.Close()
 
 	if presp.StatusCode != 200 {
 		return errors.New("Invalid status code")
