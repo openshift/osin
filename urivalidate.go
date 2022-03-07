@@ -3,6 +3,7 @@ package osin
 import (
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 )
@@ -18,7 +19,7 @@ func newUriValidationError(msg string, base string, redirect string) UriValidati
 	return UriValidationError(fmt.Sprintf("%s: %s / %s", msg, base, redirect))
 }
 
-// Parse urls, resolving uri references to base url
+// ParseUrls parses URLs, resolving references to the base url
 func ParseUrls(baseUrl, redirectUrl string) (retBaseUrl, retRedirectUrl *url.URL, err error) {
 	var base, redirect *url.URL
 	// parse base url
@@ -41,14 +42,31 @@ func ParseUrls(baseUrl, redirectUrl string) (retBaseUrl, retRedirectUrl *url.URL
 		return nil, nil, newUriValidationError("scheme mismatch", baseUrl, redirectUrl)
 	}
 
-	// Host must match
-	if redirect.Host != base.Host {
+	var (
+		redirectMatch bool
+		host          string
+	)
+
+	// verify the hosts match
+	if redirect.Host == base.Host {
+		redirectMatch = true
+		host = base.Host
+	} else if baseIP := net.ParseIP(base.Host); baseIP != nil && baseIP.IsLoopback() && base.Scheme == "http" {
+		// if the registered redirect URI is lookback, then match the input redirect without the port.
+		if redirectIP := net.ParseIP(redirect.Hostname()); redirectIP != nil && redirectIP.IsLoopback() {
+			redirectMatch = true
+			host = redirect.Host
+		}
+	}
+
+	// Hosts must match
+	if !redirectMatch {
 		return nil, nil, newUriValidationError("host mismatch", baseUrl, redirectUrl)
 	}
 
 	// resolve references to base url
-	retBaseUrl = (&url.URL{Scheme: base.Scheme, Host: base.Host, Path: "/"}).ResolveReference(&url.URL{Path: base.Path})
-	retRedirectUrl = (&url.URL{Scheme: base.Scheme, Host: base.Host, Path: "/"}).ResolveReference(&url.URL{Path: redirect.Path, RawQuery: redirect.RawQuery})
+	retBaseUrl = (&url.URL{Scheme: base.Scheme, Host: host, Path: "/"}).ResolveReference(&url.URL{Path: base.Path})
+	retRedirectUrl = (&url.URL{Scheme: base.Scheme, Host: host, Path: "/"}).ResolveReference(&url.URL{Path: redirect.Path, RawQuery: redirect.RawQuery})
 	return
 }
 
@@ -103,10 +121,10 @@ func ValidateUri(baseUri string, redirectUri string) (realRedirectUri string, er
 		return "", newUriValidationError("path prefix doesn't match", baseUri, redirectUri)
 	}
 
-	return redirect.String(),nil
+	return redirect.String(), nil
 }
 
-// Returns the first uri from an uri list
+// FirstUri returns the first uri from a URI list
 func FirstUri(baseUriList string, separator string) string {
 	if separator != "" {
 		slist := strings.Split(baseUriList, separator)
