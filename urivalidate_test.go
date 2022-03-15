@@ -19,6 +19,18 @@ func TestURIValidate(t *testing.T) {
 			"http://localhost:14000/appauth",
 		},
 		{
+			"Only domain, exact match",
+			"http://google.com",
+			"http://google.com",
+			"http://google.com",
+		},
+		{
+			"Only domain, with subpath",
+			"http://google.com",
+			"http://google.com/redirect",
+			"http://google.com/redirect",
+		},
+		{
 			"Trailing slash",
 			"http://www.google.com/myapp",
 			"http://www.google.com/myapp/",
