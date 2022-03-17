@@ -65,8 +65,8 @@ func ParseUrls(baseUrl, redirectUrl string) (retBaseUrl, retRedirectUrl *url.URL
 	}
 
 	// resolve references to base url
-	retBaseUrl = (&url.URL{Scheme: base.Scheme, Host: host, Path: "/"}).ResolveReference(&url.URL{Path: base.Path})
-	retRedirectUrl = (&url.URL{Scheme: base.Scheme, Host: host, Path: "/"}).ResolveReference(&url.URL{Path: redirect.Path, RawQuery: redirect.RawQuery})
+	retBaseUrl = (&url.URL{Scheme: base.Scheme, Host: host}).ResolveReference(&url.URL{Path: base.Path})
+	retRedirectUrl = (&url.URL{Scheme: base.Scheme, Host: host}).ResolveReference(&url.URL{Path: redirect.Path, RawQuery: redirect.RawQuery})
 	return
 }
 
