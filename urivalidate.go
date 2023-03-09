@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -105,7 +106,22 @@ func ValidateUri(baseUri string, redirectUri string) (realRedirectUri string, er
 		return "", errors.New("urls cannot be blank.")
 	}
 
+	if baseUri[0] == '/' && baseUri[len(baseUri)-1] == '/' {
+		matched, err := regexp.MatchString(baseUri[1:len(baseUri)-1], redirectUri)
+
+		if err != nil {
+			return "", err
+		}
+
+		if matched == false {
+			return "", errors.New("redirectURI did not match regex")
+		}
+
+		return redirectUri, nil
+	}
+
 	base, redirect, err := ParseUrls(baseUri, redirectUri)
+
 	if err != nil {
 		return "", err
 	}
@@ -117,6 +133,7 @@ func ValidateUri(baseUri string, redirectUri string) (realRedirectUri string, er
 
 	// ensure prefix matches are actually subpaths
 	requiredPrefix := strings.TrimRight(base.Path, "/") + "/"
+
 	if !strings.HasPrefix(redirect.Path, requiredPrefix) {
 		return "", newUriValidationError("path prefix doesn't match", baseUri, redirectUri)
 	}

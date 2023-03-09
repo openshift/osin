@@ -108,6 +108,12 @@ func TestURIValidate(t *testing.T) {
 			"http://[0:0:0:0:0:0:0:1]/callback",
 			"http://[0:0:0:0:0:0:0:1]/callback",
 		},
+		{
+			"Regex matches",
+			"/https:\\/\\/google\\.com/(.*)/",
+			"https://google.com/demo",
+			"https://google.com/demo",
+		},
 	}
 	for _, v := range valid {
 		t.Run(fmt.Sprintf("valid/%s", v.name), func(t *testing.T) {
@@ -198,6 +204,11 @@ func TestURIValidate(t *testing.T) {
 			"Redirect URI is loopback, input is a domain name without port",
 			"http://127.0.0.1/callback",
 			"http://example.com/callback",
+		},
+		{
+			"Regex doesn't match",
+			"/https:\\/\\/google\\.com/(.*)/",
+			"https://yahoo.com/demo",
 		},
 	}
 	for _, v := range invalid {
