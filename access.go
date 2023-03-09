@@ -218,10 +218,6 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	} else {
 		ret.RedirectUri = realRedirectUri
 	}
-	if ret.AuthorizeData.RedirectUri != ret.RedirectUri {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Redirect uri is different"), "auth_code_request=%s", "client redirect does not match authorization data")
-		return nil
-	}
 
 	// Verify PKCE, if present in the authorization data
 	if len(ret.AuthorizeData.CodeChallenge) > 0 {
