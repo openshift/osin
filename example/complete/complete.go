@@ -92,9 +92,9 @@ func main() {
 
 		w.Write([]byte(fmt.Sprintf("<a href=\"/authorize?response_type=code&client_id=1234&state=xyz&scope=everything&redirect_uri=%s\">Code</a><br/>", url.QueryEscape("http://localhost:14000/appauth/code"))))
 		w.Write([]byte(fmt.Sprintf("<a href=\"/authorize?response_type=token&client_id=1234&state=xyz&scope=everything&redirect_uri=%s\">Implicit</a><br/>", url.QueryEscape("http://localhost:14000/appauth/token"))))
-		w.Write([]byte(fmt.Sprintf("<a href=\"/appauth/password\">Password</a><br/>")))
-		w.Write([]byte(fmt.Sprintf("<a href=\"/appauth/client_credentials\">Client Credentials</a><br/>")))
-		w.Write([]byte(fmt.Sprintf("<a href=\"/appauth/assertion\">Assertion</a><br/>")))
+		w.Write([]byte("<a href=\"/appauth/password\">Password</a><br/>"))
+		w.Write([]byte("<a href=\"/appauth/client_credentials\">Client Credentials</a><br/>"))
+		w.Write([]byte("<a href=\"/appauth/assertion\">Assertion</a><br/>"))
 
 		w.Write([]byte("</body></html>"))
 	})
@@ -230,7 +230,7 @@ func main() {
 		jr := make(map[string]interface{})
 
 		// build access code url
-		aurl := fmt.Sprintf("/token?grant_type=client_credentials")
+		aurl := "/token?grant_type=client_credentials"
 
 		// download token
 		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
@@ -275,7 +275,7 @@ func main() {
 		jr := make(map[string]interface{})
 
 		// build access code url
-		aurl := fmt.Sprintf("/token?grant_type=assertion&assertion_type=urn:osin.example.complete&assertion=osin.data")
+		aurl := "/token?grant_type=assertion&assertion_type=urn:osin.example.complete&assertion=osin.data"
 
 		// download token
 		err := example.DownloadAccessToken(fmt.Sprintf("http://localhost:14000%s", aurl),
