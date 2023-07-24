@@ -11,6 +11,7 @@ const (
 	badUsernameInAuthValue = "Basic dSUyc2VybmFtZTpwYXNzd29yZA==" // u%2sername:password
 	badPasswordInAuthValue = "Basic dXNlcm5hbWU6cGElMnN3b3Jk"     // username:pa%2sword
 	goodAuthValue          = "Basic Y2xpZW50K25hbWU6Y2xpZW50KyUyNGVjcmV0"
+	badBearerAuthValue     = "Bearer"
 	goodBearerAuthValue    = "Bearer BGFVTDUJDp0ZXN0"
 )
 
@@ -151,6 +152,20 @@ func TestBearerAuth(t *testing.T) {
 	r = &http.Request{URL: url}
 	r.ParseForm()
 	b = CheckBearerAuth(r)
+	if b.Code != "XYZ" {
+		t.Errorf("Error decoding bearer auth")
+	}
+
+	// with valid auth in query and invalid in header
+	url, _ = url.Parse("http://host.tld/path?code=XYZ")
+	r = &http.Request{URL: url, Header: make(http.Header)}
+	r.Header.Set("Authorization", badBearerAuthValue)
+	r.ParseForm()
+	b = CheckBearerAuth(r)
+	if b == nil {
+		t.Errorf("Could not extract bearer auth")
+		return
+	}
 	if b.Code != "XYZ" {
 		t.Errorf("Error decoding bearer auth")
 	}
