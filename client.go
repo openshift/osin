@@ -1,6 +1,8 @@
 package osin
 
-import "crypto/subtle"
+import "fmt"
+
+//"crypto/subtle"
 
 // Client information
 type Client interface {
@@ -51,7 +53,15 @@ func (d *DefaultClient) GetUserData() interface{} {
 
 // Implement the ClientSecretMatcher interface
 func (d *DefaultClient) ClientSecretMatches(secret string) bool {
-	return subtle.ConstantTimeCompare([]byte(d.Secret), []byte(secret)) == 1
+	match, err := Cmp2Argon2(secret, d.Secret)
+
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	return match
+	//return  subtle.ConstantTimeCompare([]byte(d.Secret), []byte(secret)) == 1
 }
 
 func (d *DefaultClient) CopyFrom(client Client) {
