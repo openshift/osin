@@ -13,6 +13,15 @@ type TestingStorage struct {
 }
 
 func NewTestingStorage() *TestingStorage {
+	p := &Argon2Params{
+        Memory:      64 * 1024,
+        Iterations:  3,
+        Parallelism: 2,
+        SaltLength:  16,
+        KeyLength:   32,
+    }
+	hashedSecret, _ := GenerateArgon2("aabbccdd", p)
+	hashedPublic, _ := GenerateArgon2("", p)
 	r := &TestingStorage{
 		clients:   make(map[string]Client),
 		authorize: make(map[string]*AuthorizeData),
@@ -22,12 +31,13 @@ func NewTestingStorage() *TestingStorage {
 
 	r.clients["1234"] = &DefaultClient{
 		Id:          "1234",
-		Secret:      "aabbccdd",
+		Secret:      hashedSecret,
 		RedirectUri: "http://localhost:14000/appauth",
 	}
 
 	r.clients["public-client"] = &DefaultClient{
 		Id:          "public-client",
+		Secret:      hashedPublic,
 		RedirectUri: "http://localhost:14000/appauth",
 	}
 
